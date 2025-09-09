@@ -9,7 +9,8 @@
     "rootDir": "src",
     "esModuleInterop": true,
     "moduleDetection": "force",
-    "skipDefaultLibCheck": true
+    "skipDefaultLibCheck": true,
+    "types": ["vitest/globals"]
   },
   "include": ["src"]
 }

@@ -2,8 +2,10 @@
   "name": "adoteja-api",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest",
+    "test:watch": "vitest --watch"
   },
   "engines": {
     "node": ">=22.0.0",
@@ -21,6 +23,7 @@
     "globals": "^16.4.0",
     "prettier": "^3.6.2",
     "typescript": "^5.9.2",
-    "typescript-eslint": "^8.43.0"
+    "typescript-eslint": "^8.43.0",
+    "vitest": "3.2.4"
   }
 }
