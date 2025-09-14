@@ -6,11 +6,11 @@
     "lib": ["ES2024"],
     "strict": true,
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": ".",
     "esModuleInterop": true,
     "moduleDetection": "force",
     "skipDefaultLibCheck": true,
-    "types": ["vitest/globals"]
+    "types": ["vitest/globals", "node"]
   },
-  "include": ["src"]
+  "include": ["src", "test", "vitest.config.ts"]
 }
