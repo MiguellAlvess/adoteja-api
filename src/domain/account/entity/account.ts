@@ -47,7 +47,7 @@ export default class Account {
     return this.contact.getEmail()
   }
 
-  getUserId() {
+  getAccountId() {
     return this.userId.getValue()
   }
 
@@ -55,7 +55,7 @@ export default class Account {
     return this.name.getValue()
   }
 
-  getPassword() {
+  getPasswordHash() {
     return this.passwordHash.getValue()
   }
 
