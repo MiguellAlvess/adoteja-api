@@ -41,3 +41,9 @@ export class InvalidUUIDError extends DomainError {
     super("Invalid UUID", "INVALID_UUID")
   }
 }
+
+export class InvalidPasswordHashError extends DomainError {
+  constructor() {
+    super("Invalid password hash", "INVALID_PASSWORD_HASH")
+  }
+}
