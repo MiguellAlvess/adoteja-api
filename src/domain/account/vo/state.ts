@@ -8,7 +8,7 @@ export class State {
     if (!trimmed) throw new InvalidStateError()
     const normalizedState = trimmed.toUpperCase()
     if (!this.validateState(normalizedState)) {
-      throw new Error("Invalid state")
+      throw new InvalidStateError()
     }
     this.value = normalizedState
   }
