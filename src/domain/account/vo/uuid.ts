@@ -1,10 +1,11 @@
 import crypto from "crypto"
+import { InvalidUUIDError } from "../../errors/account/account-errors.js"
 
 export default class UUID {
   private value: string
 
   constructor(uuid: string) {
-    if (!this.validateUUID(uuid)) throw new Error("Invalid UUID")
+    if (!this.validateUUID(uuid)) throw new InvalidUUIDError()
     this.value = uuid
   }
 
