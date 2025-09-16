@@ -1,4 +1,5 @@
-import { PhoneNumber } from "../../../src/domain/user/vo/phone-number.js"
+import { PhoneNumber } from "../../../src/domain/account/vo/phone-number.js"
+import { InvalidPhoneNumberError } from "../../../src/domain/errors/account/account-errors.js"
 
 describe("Phone Number", () => {
   test.each([
@@ -16,7 +17,7 @@ describe("Phone Number", () => {
     "user@exa mple.com",
     " (83) 99604-9805x",
   ])("should reject invalid %s", (phoneNumber) => {
-    expect(() => new PhoneNumber(phoneNumber)).toThrow("Invalid phone number")
+    expect(() => new PhoneNumber(phoneNumber)).toThrow(InvalidPhoneNumberError)
   })
   test.each([
     "(83) 996049805",
