@@ -1,8 +1,10 @@
+import { InvalidPasswordError } from "../../errors/account/account-errors.js"
+
 export class Password {
   private value: string
 
   constructor(password: string) {
-    if (!this.validatePassword(password)) throw new Error("Invalid password")
+    if (!this.validatePassword(password)) throw new InvalidPasswordError()
     this.value = password
   }
 
