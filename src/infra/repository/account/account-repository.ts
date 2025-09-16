@@ -38,4 +38,32 @@ export class AccountRepositoryDatabase implements AccountRepository {
       accountRow.state
     )
   }
+
+  async findById(accountId: string): Promise<Account | null> {
+    const accountRow = await this.db.query((prisma) =>
+      prisma.account.findUnique({
+        where: { id: accountId },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          passwordHash: true,
+          city: true,
+          state: true,
+        },
+      })
+    )
+    if (!accountRow) return null
+
+    return new Account(
+      accountRow.id,
+      accountRow.name,
+      accountRow.email,
+      accountRow.passwordHash,
+      accountRow.phone,
+      accountRow.city,
+      accountRow.state
+    )
+  }
 }
