@@ -1,8 +1,10 @@
+import { InvalidNameError } from "../../errors/account/account-errors.js"
+
 export default class Name {
   private value: string
 
   constructor(name: string) {
-    if (!this.validateName(name)) throw new Error("Invalid name")
+    if (!this.validateName(name)) throw new InvalidNameError()
     this.value = name
   }
 
