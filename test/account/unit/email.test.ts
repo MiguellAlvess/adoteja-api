@@ -1,4 +1,5 @@
-import Email from "../../../src/domain/user/vo/email.js"
+import Email from "../../../src/domain/account/vo/email.js"
+import { InvalidEmailError } from "../../../src/domain/errors/account/account-errors.js"
 
 describe("Email", () => {
   test.each([
@@ -12,7 +13,7 @@ describe("Email", () => {
     "user@.com",
     "user@com",
   ])('should reject invalid "%s"', (email) => {
-    expect(() => new Email(email)).toThrow("Invalid email")
+    expect(() => new Email(email)).toThrow(InvalidEmailError)
   })
   test("should accept a valid email", () => {
     const email = new Email("user@example.com")
