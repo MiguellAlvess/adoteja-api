@@ -1,41 +1,42 @@
-import { describe, afterAll, afterEach, test, expect } from "vitest"
-
+import { describe, test, expect, beforeAll, afterEach } from "vitest"
+import { startPostgresTestDb } from "../../../src/infra/database/test-db.js"
 import { Signup } from "../../../src/application/usecase/account/signup.js"
+import { GetAccount } from "../../../src/application/usecase/account/get-account.js"
 import { JwtTokenGeneratorAdapter } from "../../../src/infra/auth/jwt-token-generator-adapter.js"
 import { BcryptAdapter } from "../../../src/infra/crypto/bcrypt-adapter.js"
 import { PrismaAdapter } from "../../../src/infra/database/prisma-adapter.js"
 import { AccountRepositoryDatabase } from "../../../src/infra/repository/account/account-repository.js"
 import { EmailAlreadyExistsError } from "../../../src/application/errors/account/index.js"
-import { GetAccount } from "../../../src/application/usecase/account/get-account.js"
 
 const ACCESS_SECRET = "test-access-secret"
 const REFRESH_SECRET = "test-refresh-secret"
 
-describe("Signup", () => {
-  const db = new PrismaAdapter()
-  const repository = new AccountRepositoryDatabase(db)
-  const hasher = new BcryptAdapter()
-  const tokenGenerator = new JwtTokenGeneratorAdapter(
-    ACCESS_SECRET,
-    REFRESH_SECRET,
-    "15m",
-    "7d"
-  )
-  const signup = new Signup(repository, hasher, tokenGenerator)
+describe("Signup ", () => {
+  let prisma: import("@prisma/client").PrismaClient
+  let db: PrismaAdapter
+  let repository: AccountRepositoryDatabase
+  let signup: Signup
+  let getAccount: GetAccount
+
+  beforeAll(async () => {
+    const ctx = await startPostgresTestDb()
+    prisma = ctx.prisma
+
+    db = new PrismaAdapter()
+    repository = new AccountRepositoryDatabase(db)
+    signup = new Signup(
+      repository,
+      new BcryptAdapter(),
+      new JwtTokenGeneratorAdapter(ACCESS_SECRET, REFRESH_SECRET, "15m", "7d")
+    )
+    getAccount = new GetAccount(repository)
+  })
 
   afterEach(async () => {
-    await db.query((prisma) =>
-      prisma.account.deleteMany({
-        where: { email: { contains: "@example.com" } },
-      })
-    )
+    await prisma.account.deleteMany({})
   })
 
-  afterAll(async () => {
-    await db.close()
-  })
-
-  test("should signup a new user successfully", async () => {
+  test("should signup a new user successfully and then get it", async () => {
     const input = {
       name: "Robert Martin",
       email: `test${Math.random()}@example.com`,
@@ -45,50 +46,38 @@ describe("Signup", () => {
       state: "PB",
     }
 
-    const outputSignup = await signup.execute(input)
-    const getAccount = new GetAccount(repository)
-    const outputGetAccount = await getAccount.execute(outputSignup.userId)
+    const outSignup = await signup.execute(input)
+    const outGet = await getAccount.execute(outSignup.userId)
 
-    expect(outputSignup.userId).toBeDefined()
-    expect(outputGetAccount?.name).toBe(input.name)
-    expect(outputGetAccount?.email).toBe(input.email)
-    expect(outputGetAccount?.city).toBe(input.city)
-    expect(outputGetAccount?.state).toBe(input.state)
-  })
-
-  test("should return the accessToken and refreshToken successfully", async () => {
-    const input = {
-      name: "Robert Martin",
-      email: `test${Math.random()}@example.com`,
-      password: "ValidPassword123",
-      phone: "(99) 999999999",
-      city: "Campina Grande",
-      state: "PB",
-    }
-
-    const output = await signup.execute(input)
-
-    expect(output.userId).toBeDefined()
-    expect(output.accessToken).toBeDefined()
-    expect(output.refreshToken).toBeDefined()
+    expect(outSignup.userId).toBeDefined()
+    expect(outSignup.accessToken).toBeDefined()
+    expect(outSignup.refreshToken).toBeDefined()
+    expect(outGet.name).toBe(input.name)
+    expect(outGet.email).toBe(input.email)
+    expect(outGet.city).toBe(input.city)
+    expect(outGet.state).toBe(input.state)
   })
 
   test("should not allow duplicate email", async () => {
     const email = `dup-${Math.random()}@example.com`
-    const firstAccount = {
+    await signup.execute({
       name: "User One",
       email,
       password: "ValidPassword123",
       phone: "(83) 996049805",
       city: "Campina Grande",
       state: "PB",
-    }
-    const secondAccount = { ...firstAccount, name: "User Two" }
+    })
 
-    await signup.execute(firstAccount)
-
-    await expect(signup.execute(secondAccount)).rejects.toBeInstanceOf(
-      EmailAlreadyExistsError
-    )
+    await expect(
+      signup.execute({
+        name: "User Two",
+        email,
+        password: "ValidPassword123",
+        phone: "(83) 996049805",
+        city: "Campina Grande",
+        state: "PB",
+      })
+    ).rejects.toBeInstanceOf(EmailAlreadyExistsError)
   })
 })
