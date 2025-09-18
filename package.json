@@ -8,7 +8,7 @@
     "test:watch": "vitest --watch",
     "test:coverage": "vitest run --coverage",
     "prepare": "husky",
-    "dev": "tsx --watch --env-file=.env main.ts"
+    "dev": "tsx --watch --env-file=.env src/main.ts"
   },
   "engines": {
     "node": ">=22.0.0",
@@ -23,8 +23,10 @@
     "@commitlint/config-conventional": "19.8.1",
     "@eslint/js": "^9.35.0",
     "@types/bcrypt": "^6.0.0",
+    "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.3.1",
+    "axios": "^1.12.2",
     "eslint": "^9.35.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^16.4.0",
@@ -41,6 +43,7 @@
     "@prisma/client": "6.16.1",
     "@testcontainers/postgresql": "^11.6.0",
     "bcrypt": "^6.0.0",
+    "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2"
   }
 }
