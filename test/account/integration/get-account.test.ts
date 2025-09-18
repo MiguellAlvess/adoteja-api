@@ -18,6 +18,7 @@ describe("Get Account", () => {
     const ctx = await startPostgresTestDb()
     prisma = ctx.prisma
     db = new PrismaAdapter()
+    process.env.DATABASE_URL = ctx.url
     repository = new AccountRepositoryDatabase(db)
     signup = new Signup(
       repository,

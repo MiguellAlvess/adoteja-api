@@ -21,7 +21,7 @@ describe("Signup ", () => {
   beforeAll(async () => {
     const ctx = await startPostgresTestDb()
     prisma = ctx.prisma
-
+    process.env.DATABASE_URL = ctx.url
     db = new PrismaAdapter()
     repository = new AccountRepositoryDatabase(db)
     signup = new Signup(
