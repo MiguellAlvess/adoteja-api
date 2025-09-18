@@ -9,11 +9,12 @@ export async function startPostgresTestDb() {
     .withUsername("postgres")
     .withPassword("password")
     .start()
+
   const url = container.getConnectionUri()
   const schemaPath = path.resolve(process.cwd(), "prisma", "schema.prisma")
   execSync(
-    `npx prisma db push --schema "${schemaPath}" --url "${url}" --accept-data-loss --skip-generate`,
-    { stdio: "inherit" }
+    `npx prisma db push --schema "${schemaPath}" --accept-data-loss --skip-generate`,
+    { stdio: "inherit", env: { ...process.env, DATABASE_URL: url } }
   )
   const prisma = new PrismaClient({ datasources: { db: { url } } })
   return { prisma, container, url }
