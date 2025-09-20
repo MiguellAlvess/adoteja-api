@@ -2,23 +2,19 @@ import { GetAccount } from "../../../application/usecase/account/get-account.js"
 import { Signup } from "../../../application/usecase/account/signup.js"
 import { HttpServer } from "../../http/http-server.js"
 import { http } from "../../http/http.js"
-
-type SignupInput = {
-  name: string
-  email: string
-  password: string
-  phone: string
-  city: string
-  state: string
-}
+import {
+  accountIdSchema,
+  signupSchema,
+} from "../../http/schemas/account-schemas.js"
 
 export class AccountController {
   constructor(httpServer: HttpServer, signup: Signup, getAccount: GetAccount) {
     httpServer.route(
       "post",
       "/api/accounts",
-      async (_params: Record<string, string>, body: SignupInput) => {
-        const output = await signup.execute(body)
+      async (_params: Record<string, string>, body: unknown) => {
+        const parsed = signupSchema.parse(body)
+        const output = await signup.execute(parsed)
         return http.created(output)
       }
     )
@@ -26,7 +22,8 @@ export class AccountController {
       "get",
       "/api/accounts/:id",
       async (params: { id: string }) => {
-        const output = await getAccount.execute(params.id)
+        const parsed = accountIdSchema.parse(params)
+        const output = await getAccount.execute(parsed.id)
         return http.ok(output)
       }
     )

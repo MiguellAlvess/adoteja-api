@@ -14,7 +14,7 @@ export function mapErrorToHttp(error: unknown): HttpResponse<ErrorBody> {
   if (error instanceof ZodError) {
     return http.badRequest({
       message: "Invalid request",
-      details: error.flatten(),
+      details: error.flatten().fieldErrors,
     })
   }
   if (error instanceof DomainError) {
