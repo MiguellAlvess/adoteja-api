@@ -1,6 +1,7 @@
 import { GetAccount } from "../../../application/usecase/account/get-account.js"
 import { Signup } from "../../../application/usecase/account/signup.js"
 import { HttpServer } from "../../http/http-server.js"
+import { http } from "../../http/http.js"
 
 type SignupInput = {
   name: string
@@ -17,14 +18,16 @@ export class AccountController {
       "post",
       "/api/accounts",
       async (_params: Record<string, string>, body: SignupInput) => {
-        return signup.execute(body)
+        const output = await signup.execute(body)
+        return http.created(output)
       }
     )
     httpServer.route(
       "get",
       "/api/accounts/:id",
       async (params: { id: string }) => {
-        return getAccount.execute(params.id)
+        const output = await getAccount.execute(params.id)
+        return http.ok(output)
       }
     )
   }
