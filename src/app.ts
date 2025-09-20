@@ -13,12 +13,8 @@ export function buildApp() {
   const accountRepository = new AccountRepositoryDatabase(databaseConnection)
   const getAccount = new GetAccount(accountRepository)
   const tokenGenerator = new JwtTokenGeneratorAdapter(
-    process.env.ACCESS_SECRET ??
-      process.env.JWT_ACCESS_TOKEN_SECRET ??
-      "test-access",
-    process.env.REFRESH_SECRET ??
-      process.env.JWT_REFRESH_TOKEN_SECRET ??
-      "test-refresh",
+    process.env.JWT_ACCESS_TOKEN_SECRET!,
+    process.env.JWT_REFRESH_TOKEN_SECRET!,
     "15m",
     "7d"
   )
