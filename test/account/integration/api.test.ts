@@ -142,4 +142,30 @@ describe("API", () => {
     const output = await axios.post(`${baseURL}/api/accounts`, input)
     expect(output.status).toBe(400)
   })
+
+  test("should return 200 when account is updated", async () => {
+    const input = {
+      name: "Robert Martin",
+      email: `test${Math.random()}@example.com`,
+      password: "ValidPassword123",
+      phone: "(99) 99999-9999",
+      city: "City",
+      state: "RJ",
+    }
+    const ouputSignup = await axios.post(`${baseURL}/api/accounts`, input)
+    const inputUpdate = {
+      name: "Robert Martin Updated",
+      email: `testupdated${Math.random()}@example.com`,
+      password: "UpdatedPassword123",
+      phone: "(83) 98888-8888",
+    }
+    const outputUpdate = await axios.patch(
+      `${baseURL}/api/accounts/${ouputSignup.data.userId}`,
+      inputUpdate
+    )
+    expect(outputUpdate.status).toBe(200)
+    expect(outputUpdate.data.name).toBe(inputUpdate.name)
+    expect(outputUpdate.data.email).toBe(inputUpdate.email)
+    expect(outputUpdate.data.phone).toBe(inputUpdate.phone)
+  })
 })
