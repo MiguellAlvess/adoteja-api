@@ -38,7 +38,14 @@ export class UpdateAccount {
       passwordHash: newPasswordHash,
     })
     await this.accountRepository.update(account)
-    return { id: account.getAccountId() }
+    return {
+      id: account.getAccountId(),
+      name: account.getName(),
+      email: account.getEmail(),
+      phone: account.getPhone(),
+      city: account.getCity(),
+      state: account.getState(),
+    }
   }
 }
 
@@ -52,4 +59,11 @@ type Input = {
   password?: string
 }
 
-type Output = { id: string }
+type Output = {
+  id: string
+  name: string
+  email: string
+  phone: string
+  city: string
+  state: string
+}
