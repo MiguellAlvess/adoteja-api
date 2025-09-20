@@ -1,5 +1,6 @@
 import { GetAccount } from "./application/usecase/account/get-account.js"
 import { Signup } from "./application/usecase/account/signup.js"
+import { UpdateAccount } from "./application/usecase/account/update-account.js"
 import { JwtTokenGeneratorAdapter } from "./infra/auth/jwt-token-generator-adapter.js"
 import { AccountController } from "./infra/controller/account/account-controller.js"
 import { BcryptAdapter } from "./infra/crypto/bcrypt-adapter.js"
@@ -24,6 +25,7 @@ export function buildApp() {
   const passwordHasher = new BcryptAdapter()
   const signup = new Signup(accountRepository, passwordHasher, tokenGenerator)
   const httpServer = new ExpressAdapter()
-  new AccountController(httpServer, signup, getAccount)
+  const updateAccount = new UpdateAccount(accountRepository, passwordHasher)
+  new AccountController(httpServer, signup, getAccount, updateAccount)
   return httpServer
 }
