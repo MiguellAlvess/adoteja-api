@@ -1,14 +1,22 @@
 import { GetAccount } from "../../../application/usecase/account/get-account.js"
 import { Signup } from "../../../application/usecase/account/signup.js"
+import { UpdateAccount } from "../../../application/usecase/account/update-account.js"
 import { HttpServer } from "../../http/http-server.js"
 import { http } from "../../http/http.js"
 import {
   accountIdSchema,
   signupSchema,
+  UpdateAccountInput,
+  updateAccountSchema,
 } from "../../http/schemas/account-schemas.js"
 
 export class AccountController {
-  constructor(httpServer: HttpServer, signup: Signup, getAccount: GetAccount) {
+  constructor(
+    httpServer: HttpServer,
+    signup: Signup,
+    getAccount: GetAccount,
+    updateAccount: UpdateAccount
+  ) {
     httpServer.route(
       "post",
       "/api/accounts",
@@ -24,6 +32,20 @@ export class AccountController {
       async (params: { id: string }) => {
         const parsed = accountIdSchema.parse(params)
         const output = await getAccount.execute(parsed.id)
+        return http.ok(output)
+      }
+    )
+    httpServer.route(
+      "patch",
+      "/api/accounts/:id",
+      async (params: { id: string }, body: unknown) => {
+        const { id } = accountIdSchema.parse(params)
+        const parsedBody: UpdateAccountInput = updateAccountSchema.parse(body)
+        const output = await updateAccount.execute({
+          accountId: id,
+          ...parsedBody,
+        })
+
         return http.ok(output)
       }
     )
