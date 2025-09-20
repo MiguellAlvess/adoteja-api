@@ -43,6 +43,31 @@ export default class Account {
     return new Account(userId, name, email, passwordHash, phone, city, state)
   }
 
+  update(data: {
+    name?: string
+    email?: string
+    phone?: string
+    city?: string
+    state?: string
+    passwordHash?: string
+  }) {
+    if (data.name) this.name = new Name(data.name)
+    if (data.email || data.phone) {
+      this.contact = new ContactInfo(
+        new Email(data.email ?? this.contact.getEmail()),
+        new PhoneNumber(data.phone ?? this.contact.getPhoneNumber())
+      )
+    }
+    if (data.city || data.state) {
+      this.location = new Location(
+        new City(data.city ?? this.location.getCity()),
+        new State(data.state ?? this.location.getState())
+      )
+    }
+    if (data.passwordHash)
+      this.passwordHash = new PasswordHash(data.passwordHash)
+  }
+
   getEmail() {
     return this.contact.getEmail()
   }
