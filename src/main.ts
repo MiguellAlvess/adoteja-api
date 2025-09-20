@@ -4,7 +4,7 @@ import { JwtTokenGeneratorAdapter } from "./infra/auth/jwt-token-generator-adapt
 import { AccountController } from "./infra/controller/account/account-controller.js"
 import { BcryptAdapter } from "./infra/crypto/bcrypt-adapter.js"
 import { PrismaAdapter } from "./infra/database/prisma-adapter.js"
-import { ExpressAdapter } from "./infra/http/http-server.js"
+import { ExpressAdapter } from "./infra/http/express-adapter.js"
 import { AccountRepositoryDatabase } from "./infra/repository/account/account-repository.js"
 
 const main = async () => {
