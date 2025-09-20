@@ -22,12 +22,27 @@ export class AccountRepositoryDatabase implements AccountRepository {
     )
   }
 
+  async update(account: Account): Promise<void> {
+    await this.db.query((prisma) =>
+      prisma.account.update({
+        where: { id: account.getAccountId() },
+        data: {
+          name: account.getName(),
+          email: account.getEmail(),
+          passwordHash: account.getPasswordHash(),
+          phone: account.getPhone(),
+          city: account.getCity(),
+          state: account.getState(),
+        },
+      })
+    )
+  }
+
   async findByEmail(email: string): Promise<Account | null> {
     const accountRow = await this.db.query((prisma) =>
       prisma.account.findUnique({ where: { email } })
     )
     if (!accountRow) return null
-
     return new Account(
       accountRow.id,
       accountRow.name,
@@ -55,7 +70,6 @@ export class AccountRepositoryDatabase implements AccountRepository {
       })
     )
     if (!accountRow) return null
-
     return new Account(
       accountRow.id,
       accountRow.name,
