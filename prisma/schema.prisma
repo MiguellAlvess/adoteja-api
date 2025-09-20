@@ -45,8 +45,6 @@ model Pet {
   size        String
   description String?
   status      PetStatus @default(AVAILABLE)
-  city        String
-  state       String
   photoUrl    String?
 
   adoptions   Adoption[]
