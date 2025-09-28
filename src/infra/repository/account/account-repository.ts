@@ -5,6 +5,11 @@ import DatabaseConnection from "../../database/database-connection.js"
 
 export class AccountRepositoryDatabase implements AccountRepository {
   constructor(private readonly db: DatabaseConnection) {}
+  async delete(accountId: string): Promise<void> {
+    await this.db.query((prisma) =>
+      prisma.account.delete({ where: { id: accountId } })
+    )
+  }
 
   async add(account: Account): Promise<void> {
     await this.db.query((prisma) =>
