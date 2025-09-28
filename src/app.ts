@@ -1,3 +1,4 @@
+import { DeleteAccount } from "./application/usecase/account/delete-account.js"
 import { GetAccount } from "./application/usecase/account/get-account.js"
 import { Signup } from "./application/usecase/account/signup.js"
 import { UpdateAccount } from "./application/usecase/account/update-account.js"
@@ -20,8 +21,15 @@ export function buildApp() {
   )
   const passwordHasher = new BcryptAdapter()
   const signup = new Signup(accountRepository, passwordHasher, tokenGenerator)
+  const deleteAccount = new DeleteAccount(accountRepository)
   const httpServer = new ExpressAdapter()
   const updateAccount = new UpdateAccount(accountRepository, passwordHasher)
-  new AccountController(httpServer, signup, getAccount, updateAccount)
+  new AccountController(
+    httpServer,
+    signup,
+    getAccount,
+    updateAccount,
+    deleteAccount
+  )
   return httpServer
 }
