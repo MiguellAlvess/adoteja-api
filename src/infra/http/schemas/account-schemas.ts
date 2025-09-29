@@ -34,6 +34,13 @@ export const updateAccountSchema = signupSchema
     message: "At least one field must be provided",
   })
 
+export const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+})
+
+export type LoginInput = z.infer<typeof loginSchema>
+
 export type SignupInput = z.infer<typeof signupSchema>
 
 export type AccountIdParams = z.infer<typeof accountIdSchema>

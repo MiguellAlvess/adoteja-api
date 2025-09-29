@@ -8,6 +8,7 @@ import {
 } from "../../application/errors/account/index.js"
 import { ZodError } from "zod"
 import { UnauthorizedError } from "../../application/errors/auth/index.js"
+import { InvalidCityError } from "../../domain/errors/account/account-errors.js"
 
 type ErrorBody = { message: string; code?: string; details?: unknown }
 
@@ -30,6 +31,8 @@ export function mapErrorToHttp(error: unknown): HttpResponse<ErrorBody> {
   if (error instanceof UnauthorizedError) {
     return http.unauthorized({ message: error.message })
   }
-
+  if (error instanceof InvalidCityError) {
+    return http.unauthorized({ message: error.message })
+  }
   return http.serverError()
 }

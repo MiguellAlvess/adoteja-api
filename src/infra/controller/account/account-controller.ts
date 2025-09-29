@@ -5,6 +5,7 @@ import { UpdateAccount } from "../../../application/usecase/account/update-accou
 import { HttpServer } from "../../http/http-server.js"
 import { http } from "../../http/http.js"
 import {
+  loginSchema,
   signupSchema,
   UpdateAccountInput,
   updateAccountSchema,
@@ -19,6 +20,7 @@ import {
 } from "../../http/require-auth.js"
 import { AccessTokenVerifier } from "../../../application/ports/auth/access-token-verifier.js"
 import { IncomingHttpHeaders } from "http"
+import { Login } from "../../../application/usecase/account/login.js"
 
 export class AccountController {
   constructor(
@@ -27,7 +29,8 @@ export class AccountController {
     getAccount: GetAccount,
     updateAccount: UpdateAccount,
     deleteAccount: DeleteAccount,
-    tokenVerifier: AccessTokenVerifier
+    tokenVerifier: AccessTokenVerifier,
+    login: Login
   ) {
     const requireAuth = makeRequireAuth(tokenVerifier)
 
@@ -38,6 +41,16 @@ export class AccountController {
         const parsed = signupSchema.parse(body)
         const output = await signup.execute(parsed)
         return http.created(output)
+      }
+    )
+
+    httpServer.route(
+      "post",
+      "/api/login",
+      async (_p: RouteParams, body: unknown) => {
+        const parsed = loginSchema.parse(body)
+        const output = await login.execute(parsed)
+        return http.ok(output)
       }
     )
 
