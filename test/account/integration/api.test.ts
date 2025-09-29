@@ -208,4 +208,23 @@ describe("API", () => {
     })
     expect(outputDelete.status).toBe(200)
   })
+
+  test("should return 200 when account is logged", async () => {
+    const signupBody = {
+      name: "Robert Martin",
+      email: `test${Math.random()}@example.com`,
+      password: "ValidPassword123",
+      phone: "(99) 99999-9999",
+      city: "City",
+      state: "RJ",
+    }
+    await axios.post(`${baseURL}/api/accounts`, signupBody)
+
+    const loginBody = { email: signupBody.email, password: signupBody.password }
+    const res = await axios.post(`${baseURL}/api/login`, loginBody)
+
+    expect(res.status).toBe(200)
+    expect(res.data.accessToken).toBeDefined()
+    expect(res.data.refreshToken).toBeDefined()
+  })
 })
