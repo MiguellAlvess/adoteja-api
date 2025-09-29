@@ -12,8 +12,8 @@ describe("API", () => {
   beforeAll(async () => {
     const { url } = await startPostgresTestDb()
     process.env.DATABASE_URL = url
-    process.env.ACCESS_SECRET = "test-access"
-    process.env.REFRESH_SECRET = "test-refresh"
+    process.env.JWT_ACCESS_TOKEN_SECRET = "test-access"
+    process.env.JWT_REFRESH_TOKEN_SECRET = "test-refresh"
 
     const app = buildApp()
     const server = app.listen(0)
@@ -36,11 +36,13 @@ describe("API", () => {
       city: "City",
       state: "RJ",
     }
-    const ouput = await axios.post(`${baseURL}/api/accounts`, input)
-    expect(ouput.status).toBe(201)
+    const output = await axios.post(`${baseURL}/api/accounts`, input)
+    expect(output.status).toBe(201)
+    expect(output.data.accessToken).toBeDefined()
+    expect(output.data.refreshToken).toBeDefined()
   })
 
-  test("should return 200 when account is found", async () => {
+  test("should return 200 when account is found (GET /me)", async () => {
     const input = {
       name: "Robert Martin",
       email: `test${Math.random()}@example.com`,
@@ -49,12 +51,14 @@ describe("API", () => {
       city: "City",
       state: "RJ",
     }
-    const ouputSignup = await axios.post(`${baseURL}/api/accounts`, input)
-    const outputGetAccount = await axios.get(
-      `${baseURL}/api/accounts/${ouputSignup.data.userId}`
-    )
-    expect(outputGetAccount.status).toBe(200)
-    expect(outputGetAccount.data.name).toBe(input.name)
+    const signup = await axios.post(`${baseURL}/api/accounts`, input)
+    const accessToken = signup.data.accessToken as string
+
+    const outputGet = await axios.get(`${baseURL}/api/accounts/me`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+    expect(outputGet.status).toBe(200)
+    expect(outputGet.data.name).toBe(input.name)
   })
 
   test("should return 409 when email already exists", async () => {
@@ -71,10 +75,24 @@ describe("API", () => {
     expect(output.status).toBe(409)
   })
 
-  test("should return 404 when account is not found", async () => {
-    const output = await axios.get(
-      `${baseURL}/api/accounts/0b735c5a-2f00-41b7-ad12-b97ac9a7cdba`
-    )
+  test("should return 404 when account is not found (GET /me after delete)", async () => {
+    const input = {
+      name: "Robert Martin",
+      email: `test${Math.random()}@example.com`,
+      password: "ValidPassword123",
+      phone: "(99) 99999-9999",
+      city: "City",
+      state: "RJ",
+    }
+    const signup = await axios.post(`${baseURL}/api/accounts`, input)
+    const accessToken = signup.data.accessToken as string
+    const deleteOuput = await axios.delete(`${baseURL}/api/accounts/me`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+    expect(deleteOuput.status).toBe(200)
+    const output = await axios.get(`${baseURL}/api/accounts/me`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
     expect(output.status).toBe(404)
   })
 
@@ -143,7 +161,7 @@ describe("API", () => {
     expect(output.status).toBe(400)
   })
 
-  test("should return 200 when account is updated", async () => {
+  test("should return 200 when account is updated (PATCH /me)", async () => {
     const input = {
       name: "Robert Martin",
       email: `test${Math.random()}@example.com`,
@@ -152,24 +170,29 @@ describe("API", () => {
       city: "City",
       state: "RJ",
     }
-    const ouputSignup = await axios.post(`${baseURL}/api/accounts`, input)
+    const signup = await axios.post(`${baseURL}/api/accounts`, input)
+    const accessToken = signup.data.accessToken as string
+
     const inputUpdate = {
       name: "Robert Martin Updated",
       email: `testupdated${Math.random()}@example.com`,
       password: "UpdatedPassword123",
       phone: "(83) 98888-8888",
     }
+
     const outputUpdate = await axios.patch(
-      `${baseURL}/api/accounts/${ouputSignup.data.userId}`,
-      inputUpdate
+      `${baseURL}/api/accounts/me`,
+      inputUpdate,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
     )
+
     expect(outputUpdate.status).toBe(200)
     expect(outputUpdate.data.name).toBe(inputUpdate.name)
     expect(outputUpdate.data.email).toBe(inputUpdate.email)
     expect(outputUpdate.data.phone).toBe(inputUpdate.phone)
   })
 
-  test("should return 200 when account is deleted", async () => {
+  test("should return 200 when account is deleted (DELETE /me)", async () => {
     const input = {
       name: "Robert Martin",
       email: `test${Math.random()}@example.com`,
@@ -178,10 +201,11 @@ describe("API", () => {
       city: "City",
       state: "RJ",
     }
-    const ouputSignup = await axios.post(`${baseURL}/api/accounts`, input)
-    const outputDelete = await axios.delete(
-      `${baseURL}/api/accounts/${ouputSignup.data.userId}`
-    )
+    const signup = await axios.post(`${baseURL}/api/accounts`, input)
+    const accessToken = signup.data.accessToken as string
+    const outputDelete = await axios.delete(`${baseURL}/api/accounts/me`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
     expect(outputDelete.status).toBe(200)
   })
 })
