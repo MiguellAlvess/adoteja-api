@@ -7,6 +7,7 @@ import {
   EmailAlreadyExistsError,
 } from "../../application/errors/account/index.js"
 import { ZodError } from "zod"
+import { UnauthorizedError } from "../../application/errors/auth/index.js"
 
 type ErrorBody = { message: string; code?: string; details?: unknown }
 
@@ -26,5 +27,9 @@ export function mapErrorToHttp(error: unknown): HttpResponse<ErrorBody> {
   if (error instanceof EmailAlreadyExistsError) {
     return http.conflict({ message: error.message })
   }
+  if (error instanceof UnauthorizedError) {
+    return http.unauthorized({ message: error.message })
+  }
+
   return http.serverError()
 }
