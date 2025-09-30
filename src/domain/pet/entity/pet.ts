@@ -1,23 +1,13 @@
-import { PetStatus } from "@prisma/client"
 import UUID from "../../account/vo/uuid.js"
-import Age from "../vo/age.js"
-import Description from "../vo/description.js"
-import Gender from "../vo/gender.js"
-import PetName from "../vo/name.js"
-import PhotoUrl from "../vo/photo-url.js"
-import Size from "../vo/size.js"
-import Species from "../vo/species.js"
+import PetProfile from "../vo/profile.js"
+import PetDetails from "../vo/details.js"
+import { PetStatus } from "../pet-status.js"
 
 export default class Pet {
   private id: UUID
   private ownerId: UUID
-  private name: PetName
-  private species: Species
-  private gender: Gender
-  private age: Age
-  private size: Size
-  private description?: Description
-  private photoUrl?: PhotoUrl
+  private profile: PetProfile
+  private details: PetDetails
   private status: PetStatus
 
   constructor(
@@ -28,19 +18,14 @@ export default class Pet {
     gender: string,
     age: number,
     size: string,
-    description?: string,
-    photoUrl?: string,
+    description?: string | null,
+    photoUrl?: string | null,
     status: PetStatus = PetStatus.AVAILABLE
   ) {
     this.id = new UUID(id)
     this.ownerId = new UUID(ownerId)
-    this.name = new PetName(name)
-    this.species = new Species(species)
-    this.gender = new Gender(gender)
-    this.age = new Age(age)
-    this.size = new Size(size)
-    this.description = description ? new Description(description) : undefined
-    this.photoUrl = photoUrl ? new PhotoUrl(photoUrl) : undefined
+    this.profile = PetProfile.create(name, species, gender, age, size)
+    this.details = PetDetails.create(description ?? null, photoUrl ?? null)
     this.status = status
   }
 
@@ -51,9 +36,9 @@ export default class Pet {
     gender: string,
     age: number,
     size: string,
-    description?: string,
-    photoUrl?: string
-  ): Pet {
+    description?: string | null,
+    photoUrl?: string | null
+  ) {
     const id = UUID.create().getValue()
     return new Pet(
       id,
@@ -63,45 +48,39 @@ export default class Pet {
       gender,
       age,
       size,
-      description,
-      photoUrl
+      description ?? null,
+      photoUrl ?? null
     )
   }
 
   getId() {
     return this.id.getValue()
   }
-
   getOwnerId() {
     return this.ownerId.getValue()
   }
 
   getName() {
-    return this.name.getValue()
+    return this.profile.getName()
   }
-
   getSpecies() {
-    return this.species.getValue()
+    return this.profile.getSpecies()
   }
-
   getGender() {
-    return this.gender.getValue()
+    return this.profile.getGender()
   }
-
   getAge() {
-    return this.age.getValue()
+    return this.profile.getAge()
   }
-
   getSize() {
-    return this.size.getValue()
+    return this.profile.getSize()
   }
 
   getDescription() {
-    return this.description?.getValue()
+    return this.details.getDescription()
   }
-
   getPhotoUrl() {
-    return this.photoUrl?.getValue()
+    return this.details.getPhotoUrl()
   }
 
   getStatus() {
