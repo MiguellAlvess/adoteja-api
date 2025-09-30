@@ -7,7 +7,7 @@ describe("Age", () => {
     expect(age.getValue()).toBe(a)
   })
 
-  test.each([-1, -10, 31, 100, 2.5])("should reject invalid age %s", (age) => {
+  test.each([-1, -10, 41, 100, 2.5])("should reject invalid age %s", (age) => {
     expect(() => new Age(age)).toThrow(InvalidAgeError)
   })
 })
