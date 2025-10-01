@@ -1,48 +1,43 @@
-export class InvalidPetNameError extends Error {
+import { DomainError } from "../domain-error.js"
+
+export class InvalidPetNameError extends DomainError {
   constructor() {
-    super("Invalid pet name")
-    this.name = "InvalidPetNameError"
+    super("Invalid pet name", "INVALID_PET_NAME")
   }
 }
 
-export class InvalidSpeciesError extends Error {
+export class InvalidSpeciesError extends DomainError {
   constructor() {
-    super("Invalid species")
-    this.name = "InvalidSpeciesError"
+    super("Invalid species", "INVALID_SPECIES")
   }
 }
 
-export class InvalidGenderError extends Error {
+export class InvalidGenderError extends DomainError {
   constructor() {
-    super('Invalid gender. Use "MALE", "FEMALE" or "UNKNOWN"')
-    this.name = "InvalidGenderError"
+    super("Invalid gender", "INVALID_GENDER")
   }
 }
 
-export class InvalidAgeError extends Error {
+export class InvalidAgeError extends DomainError {
   constructor() {
-    super("Invalid age")
-    this.name = "InvalidAgeError"
+    super("Invalid age", "INVALID_AGE")
   }
 }
 
-export class InvalidSizeError extends Error {
+export class InvalidSizeError extends DomainError {
   constructor() {
-    super('Invalid size. Use "SMALL", "MEDIUM" or "LARGE"')
-    this.name = "InvalidSizeError"
+    super("Invalid size", "INVALID_SIZE")
   }
 }
 
-export class InvalidDescriptionError extends Error {
+export class InvalidDescriptionError extends DomainError {
   constructor() {
-    super("Invalid description")
-    this.name = "InvalidDescriptionError"
+    super("Invalid description", "INVALID_DESCRIPTION")
   }
 }
 
-export class InvalidPhotoUrlError extends Error {
+export class InvalidPhotoUrlError extends DomainError {
   constructor() {
-    super("Invalid photo URL")
-    this.name = "InvalidPhotoUrlError"
+    super("Invalid photo URL", "INVALID_PHOTO_URL")
   }
 }
