@@ -48,12 +48,12 @@ export function buildApp() {
   )
   const petRepository = new PetRepositoryDatabase(databaseConnection)
   const photoStorage = new MulterPhotoStorageAdapter()
-  const createPet = new CreatePet(petRepository, photoStorage)
-  const getPet = new GetPet(petRepository)
   const redisUrl =
     process.env.REDIS_URL ?? "redis://default:passwordredis@localhost:6379/0"
   const ttl = Number(process.env.REDIS_TTL_SECONDS ?? "60")
   const cache = new RedisCacheAdapter(redisUrl)
+  const createPet = new CreatePet(petRepository, photoStorage, cache)
+  const getPet = new GetPet(petRepository)
   const getAllPets = new GetAllPets(petRepository, cache, ttl)
   new PetController(httpServer, createPet, tokenVerifier, getPet, getAllPets)
   return httpServer

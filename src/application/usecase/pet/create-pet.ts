@@ -1,11 +1,15 @@
 import Pet from "../../../domain/pet/entity/pet.js"
+import { Cache } from "../../ports/cache/cache.js"
 import { PetRepository } from "../../ports/repository/pet-repository.js"
 import { PhotoInput, PhotoStorage } from "../../ports/storage/photo-storage.js"
 
 export class CreatePet {
+  private readonly allPetsKey = "pets:all"
+
   constructor(
     private readonly petRepository: PetRepository,
-    private readonly photoStorage: PhotoStorage
+    private readonly photoStorage: PhotoStorage,
+    private readonly cache: Cache
   ) {}
 
   async execute(input: Input): Promise<Output> {
@@ -24,6 +28,7 @@ export class CreatePet {
       photoUrl
     )
     await this.petRepository.add(pet)
+    await this.cache.del(this.allPetsKey)
     return {
       petId: pet.getId(),
       ownerId: pet.getOwnerId(),
