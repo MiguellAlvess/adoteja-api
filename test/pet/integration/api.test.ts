@@ -130,4 +130,34 @@ describe("Pet API", () => {
     })
     expect(outputPet.status).toBe(400)
   })
+
+  test("should return 200 when pet is found", async () => {
+    const ownerInput = {
+      name: "Owner",
+      email: `owner-${Math.random()}@example.com`,
+      password: "ValidPassword123",
+      phone: "(83) 99999-0000",
+      city: "Campina Grande",
+      state: "PB",
+    }
+    const outputOwner = await axios.post(`${baseURL}/api/accounts`, ownerInput)
+    expect(outputOwner.status).toBe(201)
+    const accessToken = outputOwner.data.accessToken as string
+    const petInput = {
+      name: "Spike",
+      species: "Dog",
+      gender: "MALE",
+      age: 3,
+      size: "SMALL",
+      description: "Adorable",
+    }
+    const outputPet = await axios.post(`${baseURL}/api/pets`, petInput, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+    expect(outputPet.status).toBe(201)
+    const petId = outputPet.data.petId as string
+    const outputGetPet = await axios.get(`${baseURL}/api/pets/${petId}`)
+    expect(outputGetPet.status).toBe(200)
+    expect(outputGetPet.data.name).toBe("Spike")
+  })
 })
