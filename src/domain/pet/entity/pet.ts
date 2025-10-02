@@ -53,6 +53,10 @@ export default class Pet {
     )
   }
 
+  isOwnedBy(userId: string) {
+    return this.getOwnerId() === userId
+  }
+
   getId() {
     return this.id.getValue()
   }
