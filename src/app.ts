@@ -4,6 +4,7 @@ import { Login } from "./application/usecase/account/login.js"
 import { Signup } from "./application/usecase/account/signup.js"
 import { UpdateAccount } from "./application/usecase/account/update-account.js"
 import { CreatePet } from "./application/usecase/pet/create-pet.js"
+import { GetPet } from "./application/usecase/pet/get-pet.js"
 import { JwtAccessTokenVerifierAdapter } from "./infra/auth/jwt-access-token-verifier-adapter.js"
 import { JwtTokenGeneratorAdapter } from "./infra/auth/jwt-token-generator-adapter.js"
 import { AccountController } from "./infra/controller/account/account-controller.js"
@@ -46,6 +47,7 @@ export function buildApp() {
   const petRepository = new PetRepositoryDatabase(databaseConnection)
   const photoStorage = new MulterPhotoStorageAdapter()
   const createPet = new CreatePet(petRepository, photoStorage)
-  new PetController(httpServer, createPet, tokenVerifier)
+  const getPet = new GetPet(petRepository)
+  new PetController(httpServer, createPet, tokenVerifier, getPet)
   return httpServer
 }
