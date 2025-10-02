@@ -4,6 +4,7 @@ import { Login } from "./application/usecase/account/login.js"
 import { Signup } from "./application/usecase/account/signup.js"
 import { UpdateAccount } from "./application/usecase/account/update-account.js"
 import { CreatePet } from "./application/usecase/pet/create-pet.js"
+import { DeletePet } from "./application/usecase/pet/delete-pet.js"
 import { GetAllPets } from "./application/usecase/pet/get-all.js"
 import { GetPet } from "./application/usecase/pet/get-pet.js"
 import { JwtAccessTokenVerifierAdapter } from "./infra/auth/jwt-access-token-verifier-adapter.js"
@@ -55,6 +56,14 @@ export function buildApp() {
   const createPet = new CreatePet(petRepository, photoStorage, cache)
   const getPet = new GetPet(petRepository)
   const getAllPets = new GetAllPets(petRepository, cache, ttl)
-  new PetController(httpServer, createPet, tokenVerifier, getPet, getAllPets)
+  const deletePet = new DeletePet(petRepository, cache)
+  new PetController(
+    httpServer,
+    createPet,
+    tokenVerifier,
+    getPet,
+    getAllPets,
+    deletePet
+  )
   return httpServer
 }
