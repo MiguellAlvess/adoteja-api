@@ -55,7 +55,30 @@ export class PetRepositoryDatabase implements PetRepository {
       petRow.size,
       petRow.description ?? null,
       petRow.photoUrl ?? null,
-      petRow.status as unknown as PetStatus
+      petRow.status as PetStatus
+    )
+  }
+
+  async findAll(): Promise<Pet[]> {
+    const petsRow = await this.db.query((prisma) =>
+      prisma.pet.findMany().catch(async () => {
+        return prisma.pet.findMany()
+      })
+    )
+    return petsRow.map(
+      (petRow) =>
+        new Pet(
+          petRow.id,
+          petRow.ownerId,
+          petRow.name,
+          petRow.species,
+          petRow.gender,
+          petRow.age,
+          petRow.size,
+          petRow.description ?? null,
+          petRow.photoUrl ?? null,
+          petRow.status as PetStatus
+        )
     )
   }
 }
