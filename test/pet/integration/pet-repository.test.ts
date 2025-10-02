@@ -175,4 +175,39 @@ describe("Pet Repository", () => {
     const output = await petRepository.findAll()
     expect(output.length).toBe(2)
   })
+
+  test("should delete a pet from the database", async () => {
+    const bcrypt = new BcryptAdapter()
+    const ownerInput = Account.create(
+      "Owner Delete",
+      `owner-del-${Date.now()}@example.com`,
+      await bcrypt.hash("ValidPassword123"),
+      "(83) 95555-0000",
+      "Campina Grande",
+      "PB"
+    )
+    await accountRepository.add(ownerInput)
+    const petInput = Pet.create(
+      ownerInput.getAccountId(),
+      "Bolt",
+      "Dog",
+      "MALE",
+      6,
+      "MEDIUM",
+      "Fast runner",
+      "http://cdn.local/pets/bolt.jpg"
+    )
+    await petRepository.add(petInput)
+    const beforeOutput = await prisma.pet.findUnique({
+      where: { id: petInput.getId() },
+    })
+    expect(beforeOutput).toBeTruthy()
+    await petRepository.delete(petInput.getId())
+    const afterOutput = await prisma.pet.findUnique({
+      where: { id: petInput.getId() },
+    })
+    expect(afterOutput).toBeNull()
+    const pet = await petRepository.findById(petInput.getId())
+    expect(pet).toBeNull()
+  })
 })
