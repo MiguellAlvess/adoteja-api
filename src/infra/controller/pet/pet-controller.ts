@@ -7,6 +7,7 @@ import { CreatePet } from "../../../application/usecase/pet/create-pet.js"
 import { GetPet } from "../../../application/usecase/pet/get-pet.js"
 import { createPetSchema, petIdSchema } from "../../http/schemas/pet-schemas.js"
 import type { PhotoInput } from "../../../application/ports/storage/photo-storage.js"
+import { GetAllPets } from "../../../application/usecase/pet/get-all.js"
 
 type BodyWithFile = {
   __file?: {
@@ -21,7 +22,8 @@ export class PetController {
     httpServer: HttpServer,
     createPet: CreatePet,
     tokenVerifier: AccessTokenVerifier,
-    getPet: GetPet
+    getPet: GetPet,
+    getAllPets: GetAllPets
   ) {
     const requireAuth = makeRequireAuth(tokenVerifier)
 
@@ -72,6 +74,11 @@ export class PetController {
     httpServer.route("get", "/api/pets/:id", async (params: { id: string }) => {
       const { id } = petIdSchema.parse(params)
       const output = await getPet.execute(id)
+      return http.ok(output)
+    })
+
+    httpServer.route("get", "/api/pets", async () => {
+      const output = await getAllPets.execute()
       return http.ok(output)
     })
   }
