@@ -1,10 +1,8 @@
 import { describe, test, expect, beforeAll, afterEach } from "vitest"
 import { startPostgresTestDb } from "../../../src/infra/database/test-db.js"
 import { PrismaAdapter } from "../../../src/infra/database/prisma-adapter.js"
-
 import { PetRepositoryDatabase } from "../../../src/infra/repository/pet/pet-repository.js"
 import { AccountRepositoryDatabase } from "../../../src/infra/repository/account/account-repository.js"
-
 import Account from "../../../src/domain/account/entity/account.js"
 import Pet from "../../../src/domain/pet/entity/pet.js"
 import { BcryptAdapter } from "../../../src/infra/crypto/bcrypt-adapter.js"
@@ -87,16 +85,59 @@ describe("Pet Repository", () => {
       "http://cdn.local/pets/luna.jpg"
     )
     await petRepository.add(pet)
-    const row = await prisma.pet.findUnique({ where: { id: pet.getId() } })
-    expect(row).toBeTruthy()
-    expect(row?.ownerId).toBe(owner.getAccountId())
-    expect(row?.name).toBe("Luna")
-    expect(row?.species).toBe("Cat")
-    expect(row?.gender).toBe("FEMALE")
-    expect(row?.age).toBe(2)
-    expect(row?.size).toBe("SMALL")
-    expect(row?.description).toBe("Playful kitten")
-    expect(row?.photoUrl).toBe("http://cdn.local/pets/luna.jpg")
-    expect(row?.status).toBe("AVAILABLE")
+    const petRow = await prisma.pet.findUnique({ where: { id: pet.getId() } })
+    expect(petRow).toBeTruthy()
+    expect(petRow?.ownerId).toBe(owner.getAccountId())
+    expect(petRow?.name).toBe("Luna")
+    expect(petRow?.species).toBe("Cat")
+    expect(petRow?.gender).toBe("FEMALE")
+    expect(petRow?.age).toBe(2)
+    expect(petRow?.size).toBe("SMALL")
+    expect(petRow?.description).toBe("Playful kitten")
+    expect(petRow?.photoUrl).toBe("http://cdn.local/pets/luna.jpg")
+    expect(petRow?.status).toBe("AVAILABLE")
+  })
+
+  test("should return a Pet domain entity with findById()", async () => {
+    const bcrypt = new BcryptAdapter()
+    const ownerInput = Account.create(
+      "Owner Three",
+      `owner3-${Math.random()}@example.com`,
+      await bcrypt.hash("ValidPassword123"),
+      "(83) 97777-0000",
+      "Campina Grande",
+      "PB"
+    )
+    await accountRepository.add(ownerInput)
+    const pet = Pet.create(
+      ownerInput.getAccountId(),
+      "Thor",
+      "Dog",
+      "MALE",
+      4,
+      "MEDIUM",
+      "Loyal friend",
+      "http://cdn.local/pets/thor.jpg"
+    )
+    await petRepository.add(pet)
+    const ouput = await petRepository.findById(pet.getId())
+    expect(ouput).toBeTruthy()
+    expect(ouput?.getId()).toBe(pet.getId())
+    expect(ouput?.getOwnerId()).toBe(ownerInput.getAccountId())
+    expect(ouput?.getName()).toBe("Thor")
+    expect(ouput?.getSpecies()).toBe("Dog")
+    expect(ouput?.getGender()).toBe("MALE")
+    expect(ouput?.getAge()).toBe(4)
+    expect(ouput?.getSize()).toBe("MEDIUM")
+    expect(ouput?.getDescription()).toBe("Loyal friend")
+    expect(ouput?.getPhotoUrl()).toBe("http://cdn.local/pets/thor.jpg")
+    expect(ouput?.getStatus()).toBe("AVAILABLE")
+  })
+
+  test("should return null on findById() when pet does not exist", async () => {
+    const result = await petRepository.findById(
+      "00000000-0000-0000-0000-000000000000"
+    )
+    expect(result).toBeNull()
   })
 })
