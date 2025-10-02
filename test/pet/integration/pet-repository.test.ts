@@ -140,4 +140,40 @@ describe("Pet Repository", () => {
     )
     expect(result).toBeNull()
   })
+  test("should return domain entities for all persisted pets", async () => {
+    const bcrypt = new BcryptAdapter()
+    const owner = Account.create(
+      "Owner Repo",
+      `owner-repo-${Math.random()}@example.com`,
+      await bcrypt.hash("ValidPassword123"),
+      "(83) 90000-0000",
+      "Campina Grande",
+      "PB"
+    )
+    await accountRepository.add(owner)
+    const pet1 = Pet.create(
+      owner.getAccountId(),
+      "Spike",
+      "Dog",
+      "MALE",
+      3,
+      "SMALL",
+      "Cute",
+      null
+    )
+    const pet2 = Pet.create(
+      owner.getAccountId(),
+      "Luna",
+      "Cat",
+      "FEMALE",
+      2,
+      "SMALL",
+      "Playful",
+      "http://cdn.local/pets/luna.jpg"
+    )
+    await petRepository.add(pet1)
+    await petRepository.add(pet2)
+    const output = await petRepository.findAll()
+    expect(output.length).toBe(2)
+  })
 })
