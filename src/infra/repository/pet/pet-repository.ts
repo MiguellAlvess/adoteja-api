@@ -81,4 +81,8 @@ export class PetRepositoryDatabase implements PetRepository {
         )
     )
   }
+
+  async delete(petId: string): Promise<void> {
+    await this.db.query((prisma) => prisma.pet.delete({ where: { id: petId } }))
+  }
 }

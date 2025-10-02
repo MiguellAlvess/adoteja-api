@@ -4,4 +4,5 @@ export interface PetRepository {
   add: (pet: Pet) => Promise<void>
   findById: (petId: string) => Promise<Pet | null>
   findAll: () => Promise<Pet[]>
+  delete(petId: string): Promise<void>
 }
