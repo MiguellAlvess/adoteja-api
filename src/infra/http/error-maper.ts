@@ -9,6 +9,10 @@ import {
 import { ZodError } from "zod"
 import { UnauthorizedError } from "../../application/errors/auth/index.js"
 import { InvalidCityError } from "../../domain/errors/account/account-errors.js"
+import {
+  NotPetOwnerError,
+  PetNotFoundError,
+} from "../../application/errors/pet/index.js"
 
 type ErrorBody = { message: string; code?: string; details?: unknown }
 
@@ -33,6 +37,12 @@ export function mapErrorToHttp(error: unknown): HttpResponse<ErrorBody> {
   }
   if (error instanceof InvalidCityError) {
     return http.unauthorized({ message: error.message })
+  }
+  if (error instanceof PetNotFoundError) {
+    return http.notFound({ message: error.message })
+  }
+  if (error instanceof NotPetOwnerError) {
+    return http.forbidden({ message: error.message })
   }
   return http.serverError()
 }
