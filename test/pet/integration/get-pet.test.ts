@@ -1,4 +1,3 @@
-import { describe, test, expect, beforeAll, afterEach } from "vitest"
 import { startPostgresTestDb } from "../../../src/infra/database/test-db.js"
 import { PrismaAdapter } from "../../../src/infra/database/prisma-adapter.js"
 import { AccountRepositoryDatabase } from "../../../src/infra/repository/account/account-repository.js"
@@ -9,10 +8,37 @@ import { GetPet } from "../../../src/application/usecase/pet/get-pet.js"
 import { JwtTokenGeneratorAdapter } from "../../../src/infra/auth/jwt-token-generator-adapter.js"
 import { BcryptAdapter } from "../../../src/infra/crypto/bcrypt-adapter.js"
 import { PetNotFoundError } from "../../../src/application/errors/pet/index.js"
+import { Cache } from "../../../src/application/ports/cache/cache.js"
 
 class PhotoStorageStub {
   async upload() {
     return "http://cdn.local/pets/photo.jpg"
+  }
+}
+
+class InMemoryCache implements Cache {
+  private store = new Map<
+    string,
+    { value: unknown; expiresAt: number | null }
+  >()
+
+  async get<T>(key: string): Promise<T | null> {
+    const entry = this.store.get(key)
+    if (!entry) return null
+    if (entry.expiresAt && entry.expiresAt < Date.now()) {
+      this.store.delete(key)
+      return null
+    }
+    return entry.value as T
+  }
+
+  async set<T>(key: string, value: T, ttlSeconds: number): Promise<void> {
+    const expiresAt = ttlSeconds > 0 ? Date.now() + ttlSeconds * 1000 : null
+    this.store.set(key, { value, expiresAt })
+  }
+
+  async del(key: string): Promise<void> {
+    this.store.delete(key)
   }
 }
 
@@ -39,7 +65,11 @@ describe("GetPet", () => {
       new BcryptAdapter(),
       new JwtTokenGeneratorAdapter("test-access", "test-refresh", "15m", "7d")
     )
-    createPet = new CreatePet(petRepository, new PhotoStorageStub())
+    createPet = new CreatePet(
+      petRepository,
+      new PhotoStorageStub(),
+      new InMemoryCache()
+    )
     getPet = new GetPet(petRepository)
   })
 

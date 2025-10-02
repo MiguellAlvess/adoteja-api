@@ -1,4 +1,3 @@
-import { describe, test, expect, beforeAll, afterEach } from "vitest"
 import { startPostgresTestDb } from "../../../src/infra/database/test-db.js"
 import { PrismaAdapter } from "../../../src/infra/database/prisma-adapter.js"
 import { Signup } from "../../../src/application/usecase/account/signup.js"
@@ -11,6 +10,7 @@ import type {
   PhotoInput,
   PhotoStorage,
 } from "../../../src/application/ports/storage/photo-storage.js"
+import { Cache } from "../../../src/application/ports/cache/cache.js"
 
 const ACCESS_SECRET = "test-access-secret"
 const REFRESH_SECRET = "test-refresh-secret"
@@ -23,6 +23,32 @@ class PhotoStorageStub implements PhotoStorage {
   async upload(input: PhotoInput): Promise<string> {
     this.lastUploaded = input
     return this.urlToReturn
+  }
+}
+
+class InMemoryCache implements Cache {
+  private store = new Map<
+    string,
+    { value: unknown; expiresAt: number | null }
+  >()
+
+  async get<T>(key: string): Promise<T | null> {
+    const entry = this.store.get(key)
+    if (!entry) return null
+    if (entry.expiresAt && entry.expiresAt < Date.now()) {
+      this.store.delete(key)
+      return null
+    }
+    return entry.value as T
+  }
+
+  async set<T>(key: string, value: T, ttlSeconds: number): Promise<void> {
+    const expiresAt = ttlSeconds > 0 ? Date.now() + ttlSeconds * 1000 : null
+    this.store.set(key, { value, expiresAt })
+  }
+
+  async del(key: string): Promise<void> {
+    this.store.delete(key)
   }
 }
 
@@ -51,7 +77,7 @@ describe("CreatePet", () => {
     )
 
     photoStorage = new PhotoStorageStub()
-    createPet = new CreatePet(petRepository, photoStorage)
+    createPet = new CreatePet(petRepository, photoStorage, new InMemoryCache())
   })
 
   afterEach(async () => {
@@ -93,7 +119,7 @@ describe("CreatePet", () => {
 
   test("should create a pet with photo (uploads and stores url)", async () => {
     photoStorage = new PhotoStorageStub("http://cdn.local/pets/spike.jpg")
-    createPet = new CreatePet(petRepository, photoStorage)
+    createPet = new CreatePet(petRepository, photoStorage, new InMemoryCache())
     const owner = await signup.execute({
       name: "Owner Two",
       email: `owner2-${Math.random()}@example.com`,

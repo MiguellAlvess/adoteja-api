@@ -1,4 +1,3 @@
-import { describe, test, expect, beforeAll, afterEach } from "vitest"
 import { startPostgresTestDb } from "../../../src/infra/database/test-db.js"
 import { PrismaAdapter } from "../../../src/infra/database/prisma-adapter.js"
 import { PetRepositoryDatabase } from "../../../src/infra/repository/pet/pet-repository.js"

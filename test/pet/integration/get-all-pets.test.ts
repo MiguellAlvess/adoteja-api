@@ -1,13 +1,9 @@
-import { describe, test, expect, beforeAll, afterEach } from "vitest"
 import { startPostgresTestDb } from "../../../src/infra/database/test-db.js"
 import { PrismaAdapter } from "../../../src/infra/database/prisma-adapter.js"
-
 import { AccountRepositoryDatabase } from "../../../src/infra/repository/account/account-repository.js"
 import { PetRepositoryDatabase } from "../../../src/infra/repository/pet/pet-repository.js"
-
 import { Signup } from "../../../src/application/usecase/account/signup.js"
 import { CreatePet } from "../../../src/application/usecase/pet/create-pet.js"
-
 import { JwtTokenGeneratorAdapter } from "../../../src/infra/auth/jwt-token-generator-adapter.js"
 import { BcryptAdapter } from "../../../src/infra/crypto/bcrypt-adapter.js"
 import { GetAllPets } from "../../../src/application/usecase/pet/get-all.js"
@@ -68,7 +64,11 @@ describe("GetAllPets (use case)", () => {
       new BcryptAdapter(),
       new JwtTokenGeneratorAdapter("test-access", "test-refresh", "15m", "7d")
     )
-    createPet = new CreatePet(petRepository, new PhotoStorageStub())
+    createPet = new CreatePet(
+      petRepository,
+      new PhotoStorageStub(),
+      new InMemoryCache()
+    )
     getAllPets = new GetAllPets(petRepository, new InMemoryCache(), 60)
   })
 
