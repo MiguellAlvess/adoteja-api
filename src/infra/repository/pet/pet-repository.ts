@@ -1,6 +1,8 @@
 import { PetRepository } from "../../../application/ports/repository/pet-repository.js"
 import Pet from "../../../domain/pet/entity/pet.js"
 import DatabaseConnection from "../../database/database-connection.js"
+import { PetStatus as PrismaPetStatus } from "@prisma/client"
+import { PetStatus } from "../../../domain/pet/pet-status.js"
 
 export class PetRepositoryDatabase implements PetRepository {
   constructor(private readonly db: DatabaseConnection) {}
@@ -17,10 +19,43 @@ export class PetRepositoryDatabase implements PetRepository {
           age: pet.getAge(),
           size: pet.getSize(),
           description: pet.getDescription(),
-          status: pet.getStatus(),
           photoUrl: pet.getPhotoUrl(),
+          status: pet.getStatus() as unknown as PrismaPetStatus,
         },
       })
+    )
+  }
+
+  async findById(petId: string): Promise<Pet | null> {
+    const petRow = await this.db.query((prisma) =>
+      prisma.pet.findUnique({
+        where: { id: petId },
+        select: {
+          id: true,
+          ownerId: true,
+          name: true,
+          species: true,
+          gender: true,
+          age: true,
+          size: true,
+          description: true,
+          photoUrl: true,
+          status: true,
+        },
+      })
+    )
+    if (!petRow) return null
+    return new Pet(
+      petRow.id,
+      petRow.ownerId,
+      petRow.name,
+      petRow.species,
+      petRow.gender,
+      petRow.age,
+      petRow.size,
+      petRow.description ?? null,
+      petRow.photoUrl ?? null,
+      petRow.status as unknown as PetStatus
     )
   }
 }
