@@ -4,7 +4,8 @@ import { http } from "../../http/http.js"
 import { makeRequireAuth, Authed } from "../../http/require-auth.js"
 import { AccessTokenVerifier } from "../../../application/ports/auth/access-token-verifier.js"
 import { CreatePet } from "../../../application/usecase/pet/create-pet.js"
-import { createPetSchema } from "../../http/schemas/pet-schemas.js"
+import { GetPet } from "../../../application/usecase/pet/get-pet.js"
+import { createPetSchema, petIdSchema } from "../../http/schemas/pet-schemas.js"
 import type { PhotoInput } from "../../../application/ports/storage/photo-storage.js"
 
 type BodyWithFile = {
@@ -19,7 +20,8 @@ export class PetController {
   constructor(
     httpServer: HttpServer,
     createPet: CreatePet,
-    tokenVerifier: AccessTokenVerifier
+    tokenVerifier: AccessTokenVerifier,
+    getPet: GetPet
   ) {
     const requireAuth = makeRequireAuth(tokenVerifier)
 
@@ -46,6 +48,7 @@ export class PetController {
             size: body.size,
             description: body.description ?? null,
           })
+
           let photo: PhotoInput | null = null
           if (body.__file) {
             photo = {
@@ -54,6 +57,7 @@ export class PetController {
               mimeType: body.__file.mimetype,
             }
           }
+
           const output = await createPet.execute({
             ownerId: auth.sub,
             ...parsed,
@@ -64,5 +68,11 @@ export class PetController {
       ),
       { upload: { single: "photo" } }
     )
+
+    httpServer.route("get", "/api/pets/:id", async (params: { id: string }) => {
+      const { id } = petIdSchema.parse(params)
+      const output = await getPet.execute(id)
+      return http.ok(output)
+    })
   }
 }
