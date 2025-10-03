@@ -1,6 +1,7 @@
 import UUID from "../../account/vo/uuid.js"
 import { AdoptionState } from "../state/adoption-state.js"
 import { PendingState } from "../state/pending.js"
+import { AdoptionStatusName, makeState } from "../state/state-factory.js"
 
 export class Adoption {
   private id: UUID
@@ -35,6 +36,25 @@ export class Adoption {
       new PendingState(),
       new Date(),
       null
+    )
+  }
+
+  static fromPersistence(props: {
+    id: string
+    petId: string
+    adopterId: string
+    status: AdoptionStatusName
+    requestedAt: Date
+    completedAt: Date | null
+  }): Adoption {
+    const state = makeState(props.status)
+    return new Adoption(
+      props.id,
+      props.petId,
+      props.adopterId,
+      state,
+      props.requestedAt,
+      props.completedAt
     )
   }
 
