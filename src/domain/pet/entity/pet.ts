@@ -53,6 +53,38 @@ export default class Pet {
     )
   }
 
+  update(data: {
+    name?: string
+    species?: string
+    gender?: string
+    age?: number
+    size?: string
+    description?: string | null
+    photoUrl?: string | null
+    status?: PetStatus
+  }) {
+    if (data.name || data.species || data.gender || data.age || data.size) {
+      this.profile = PetProfile.create(
+        data.name ?? this.profile.getName(),
+        data.species ?? this.profile.getSpecies(),
+        data.gender ?? this.profile.getGender(),
+        data.age ?? this.profile.getAge(),
+        data.size ?? this.profile.getSize()
+      )
+    }
+    if (data.description !== undefined || data.photoUrl !== undefined) {
+      this.details = PetDetails.create(
+        data.description !== undefined
+          ? data.description
+          : this.details.getDescription(),
+        data.photoUrl !== undefined ? data.photoUrl : this.details.getPhotoUrl()
+      )
+    }
+    if (data.status) {
+      this.status = data.status
+    }
+  }
+
   isOwnedBy(userId: string) {
     return this.getOwnerId() === userId
   }
