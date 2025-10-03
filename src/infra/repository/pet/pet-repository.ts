@@ -26,6 +26,29 @@ export class PetRepositoryDatabase implements PetRepository {
     )
   }
 
+  async update(pet: Pet): Promise<void> {
+    await this.db.query((prisma) =>
+      prisma.pet.update({
+        where: { id: pet.getId() },
+        data: {
+          ownerId: pet.getOwnerId(),
+          name: pet.getName(),
+          species: pet.getSpecies(),
+          gender: pet.getGender(),
+          age: pet.getAge(),
+          size: pet.getSize(),
+          description: pet.getDescription(),
+          photoUrl: pet.getPhotoUrl(),
+          status: pet.getStatus() as unknown as PrismaPetStatus,
+        },
+      })
+    )
+  }
+
+  async delete(petId: string): Promise<void> {
+    await this.db.query((prisma) => prisma.pet.delete({ where: { id: petId } }))
+  }
+
   async findById(petId: string): Promise<Pet | null> {
     const petRow = await this.db.query((prisma) =>
       prisma.pet.findUnique({
@@ -80,9 +103,5 @@ export class PetRepositoryDatabase implements PetRepository {
           petRow.status as PetStatus
         )
     )
-  }
-
-  async delete(petId: string): Promise<void> {
-    await this.db.query((prisma) => prisma.pet.delete({ where: { id: petId } }))
   }
 }
