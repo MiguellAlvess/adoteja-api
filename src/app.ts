@@ -7,6 +7,7 @@ import { CreatePet } from "./application/usecase/pet/create-pet.js"
 import { DeletePet } from "./application/usecase/pet/delete-pet.js"
 import { GetAllPets } from "./application/usecase/pet/get-all.js"
 import { GetPet } from "./application/usecase/pet/get-pet.js"
+import { UpdatePet } from "./application/usecase/pet/update-pet.js"
 import { JwtAccessTokenVerifierAdapter } from "./infra/auth/jwt-access-token-verifier-adapter.js"
 import { JwtTokenGeneratorAdapter } from "./infra/auth/jwt-token-generator-adapter.js"
 import { RedisCacheAdapter } from "./infra/cache/redis-adapter.js"
@@ -57,13 +58,15 @@ export function buildApp() {
   const getPet = new GetPet(petRepository)
   const getAllPets = new GetAllPets(petRepository, cache, ttl)
   const deletePet = new DeletePet(petRepository, cache)
+  const updatePet = new UpdatePet(petRepository, cache, photoStorage)
   new PetController(
     httpServer,
     createPet,
     tokenVerifier,
     getPet,
     getAllPets,
-    deletePet
+    deletePet,
+    updatePet
   )
   return httpServer
 }

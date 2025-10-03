@@ -15,5 +15,8 @@ export const petIdSchema = z.object({
   }),
 })
 
+export const updatePetSchema = createPetSchema.partial()
+
+export type UpdatePetBody = z.infer<typeof updatePetSchema>
 export type PetIdParams = z.infer<typeof petIdSchema>
 export type CreatePetBody = z.infer<typeof createPetSchema>
