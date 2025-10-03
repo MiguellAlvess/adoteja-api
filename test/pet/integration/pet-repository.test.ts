@@ -210,4 +210,56 @@ describe("Pet Repository", () => {
     const pet = await petRepository.findById(petInput.getId())
     expect(pet).toBeNull()
   })
+
+  test("should update a pet in the database", async () => {
+    const bcrypt = new BcryptAdapter()
+    const account = Account.create(
+      "User Update",
+      `user-upd-${Date.now()}@example.com`,
+      await bcrypt.hash("ValidPassword123"),
+      "(83) 95555-0000",
+      "Campina Grande",
+      "PB"
+    )
+    await accountRepository.add(account)
+    const pet = Pet.create(
+      account.getAccountId(),
+      "Bolt",
+      "Dog",
+      "MALE",
+      6,
+      "MEDIUM",
+      "Fast runner",
+      "http://cdn.local/pets/bolt.jpg"
+    )
+    await petRepository.add(pet)
+    const before = await prisma.pet.findUnique({
+      where: { id: pet.getId() },
+      select: { name: true, age: true, description: true },
+    })
+    expect(before).toEqual({
+      name: "Bolt",
+      age: 6,
+      description: "Fast runner",
+    })
+    pet.update({
+      name: "Bolt Turbo",
+      age: 7,
+      description: null,
+    })
+    await petRepository.update(pet)
+    const after = await prisma.pet.findUnique({
+      where: { id: pet.getId() },
+      select: { name: true, age: true, description: true },
+    })
+    expect(after).toEqual({
+      name: "Bolt Turbo",
+      age: 7,
+      description: null,
+    })
+    const output = await petRepository.findById(pet.getId())
+    expect(output?.getName()).toBe("Bolt Turbo")
+    expect(output?.getAge()).toBe(7)
+    expect(output?.getDescription()).toBeNull()
+  })
 })
