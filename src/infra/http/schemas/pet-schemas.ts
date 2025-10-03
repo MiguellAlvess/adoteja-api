@@ -15,7 +15,9 @@ export const petIdSchema = z.object({
   }),
 })
 
-export const updatePetSchema = createPetSchema.partial()
+export const updatePetSchema = createPetSchema.partial().extend({
+  status: z.enum(["AVAILABLE", "ADOPTED"]).optional(),
+})
 
 export type UpdatePetBody = z.infer<typeof updatePetSchema>
 export type PetIdParams = z.infer<typeof petIdSchema>
