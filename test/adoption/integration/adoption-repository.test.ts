@@ -463,7 +463,7 @@ describe("Adoption Repository", () => {
     expect(adoptionRow?.status).toBe("COMPLETED")
   })
 
-  test("should return all adoptions of a pet", async () => {
+  test("should return all adoptions for a given pet", async () => {
     const bcrypt = new BcryptAdapter()
     const owner = Account.create(
       "Owner",
@@ -509,5 +509,57 @@ describe("Adoption Repository", () => {
     await adoptionRepository.add(adoption2)
     const output = await adoptionRepository.findByPetId(pet.getId())
     expect(output.length).toBe(2)
+  })
+
+  test("should return all adoptions for a given adopter", async () => {
+    const bcrypt = new BcryptAdapter()
+    const owner = Account.create(
+      "Owner",
+      `owner-${Math.random()}@example.com`,
+      await bcrypt.hash("ValidPassword123"),
+      "(83) 99999-0000",
+      "Campina Grande",
+      "PB"
+    )
+    await accountRepository.add(owner)
+    const adopter = Account.create(
+      "Adopter",
+      `adopter-${Math.random()}@example.com`,
+      await bcrypt.hash("ValidPassword123"),
+      "(83) 98888-0000",
+      "Campina Grande",
+      "PB"
+    )
+    await accountRepository.add(adopter)
+    const pet1 = Pet.create(
+      owner.getAccountId(),
+      "Bolt",
+      "Dog",
+      "MALE",
+      4,
+      "MEDIUM",
+      "Fast",
+      null
+    )
+    const pet2 = Pet.create(
+      owner.getAccountId(),
+      "Luna",
+      "Cat",
+      "FEMALE",
+      2,
+      "SMALL",
+      "Playful",
+      null
+    )
+    await petRepository.add(pet1)
+    await petRepository.add(pet2)
+    const adoption1 = Adoption.request(pet1.getId(), adopter.getAccountId())
+    const adoption2 = Adoption.request(pet2.getId(), adopter.getAccountId())
+    await adoptionRepository.add(adoption1)
+    await adoptionRepository.add(adoption2)
+    const adopterList = await adoptionRepository.findByAdopterId(
+      adopter.getAccountId()
+    )
+    expect(adopterList.length).toBe(2)
   })
 })
