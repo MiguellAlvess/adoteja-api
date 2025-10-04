@@ -13,3 +13,9 @@ export class AdoptionAlreadyRequestedError extends Error {
     super("Adoption already requested by this adopter for this pet")
   }
 }
+
+export class AdoptionNotFoundError extends Error {
+  constructor() {
+    super("Adoption not found")
+  }
+}
