@@ -96,4 +96,30 @@ export class AdoptionRepositoryDatabase implements AdoptionRepository {
       completedAt: adoptionRow.completedAt,
     })
   }
+
+  async findByPetId(petId: string): Promise<Adoption[]> {
+    const adoptionRow = await this.db.query((prisma) =>
+      prisma.adoption.findMany({
+        where: { petId },
+        select: {
+          id: true,
+          petId: true,
+          adopterId: true,
+          status: true,
+          requestedAt: true,
+          completedAt: true,
+        },
+      })
+    )
+    return adoptionRow.map((row) =>
+      Adoption.fromPersistence({
+        id: row.id,
+        petId: row.petId,
+        adopterId: row.adopterId,
+        status: row.status,
+        requestedAt: row.requestedAt,
+        completedAt: row.completedAt,
+      })
+    )
+  }
 }
