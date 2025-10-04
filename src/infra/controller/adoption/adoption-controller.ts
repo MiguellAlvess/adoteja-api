@@ -16,6 +16,7 @@ import { ApproveAdoption } from "../../../application/usecase/adoption/approve-a
 import { RejectAdoption } from "../../../application/usecase/adoption/reject-adoption.js"
 import { CompleteAdoption } from "../../../application/usecase/adoption/complete-adoption.js"
 import { GetAdoptionsByPet } from "../../../application/usecase/adoption/get-adoptions-by-pet.js"
+import { GetAdoptionsByAdopter } from "../../../application/usecase/adoption/get-adoptions-by-adopter.js"
 
 export class AdoptionController {
   constructor(
@@ -26,7 +27,8 @@ export class AdoptionController {
     approveAdoption: ApproveAdoption,
     rejectAdoption: RejectAdoption,
     completeAdoption: CompleteAdoption,
-    getAdoptionsByPet: GetAdoptionsByPet
+    getAdoptionsByPet: GetAdoptionsByPet,
+    getAdoptionsByAdopter: GetAdoptionsByAdopter
   ) {
     const requireAuth = makeRequireAuth(tokenVerifier)
 
@@ -73,6 +75,17 @@ export class AdoptionController {
       requireAuth<RouteParams, unknown, RouteQuery>(
         async (params, _b, _q, _h, _auth) => {
           const output = await completeAdoption.execute(params.id)
+          return http.ok(output)
+        }
+      )
+    )
+
+    httpServer.route(
+      "get",
+      "/api/adoptions/me",
+      requireAuth<RouteParams, unknown, RouteQuery>(
+        async (_p, _b, _q, _h, auth) => {
+          const output = await getAdoptionsByAdopter.execute(auth.sub)
           return http.ok(output)
         }
       )
