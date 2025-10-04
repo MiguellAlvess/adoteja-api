@@ -373,4 +373,46 @@ describe("Adoption Repository", () => {
     })
     expect(adoptionRow?.status).toBe("APPROVED")
   })
+
+  test("should update adoption status to REJECTED in database)", async () => {
+    const bcrypt = new BcryptAdapter()
+    const owner = Account.create(
+      "Owner Five",
+      `owner5-${Math.random()}@example.com`,
+      await bcrypt.hash("ValidPassword123"),
+      "(83) 90005-0000",
+      "Campina Grande",
+      "PB"
+    )
+    await accountRepository.add(owner)
+    const adopter = Account.create(
+      "Adopter Five",
+      `adopter5-${Math.random()}@example.com`,
+      await bcrypt.hash("ValidPassword123"),
+      "(83) 90006-0000",
+      "Campina Grande",
+      "PB"
+    )
+    await accountRepository.add(adopter)
+    const pet = Pet.create(
+      owner.getAccountId(),
+      "Jerry",
+      "Dog",
+      "MALE",
+      1,
+      "SMALL",
+      "Nice",
+      null
+    )
+    await petRepository.add(pet)
+    const adoption = Adoption.request(pet.getId(), adopter.getAccountId())
+    await adoptionRepository.add(adoption)
+    adoption.reject()
+    await adoptionRepository.update(adoption)
+    const adoptionRow = await prisma.adoption.findUnique({
+      where: { id: adoption.getId() },
+      select: { status: true, completedAt: true },
+    })
+    expect(adoptionRow?.status).toBe("REJECTED")
+  })
 })
