@@ -1,7 +1,10 @@
 import DatabaseConnection from "../../database/database-connection.js"
 import { AdoptionRepository } from "../../../application/ports/repository/adoption-repository.js"
 import { Adoption } from "../../../domain/adoption/entity/adoption.js"
-import { AdoptionStatus as PrismaAdoptionStatus } from "@prisma/client"
+import {
+  AdoptionStatus,
+  AdoptionStatus as PrismaAdoptionStatus,
+} from "@prisma/client"
 
 export class AdoptionRepositoryDatabase implements AdoptionRepository {
   constructor(private readonly db: DatabaseConnection) {}
@@ -98,7 +101,7 @@ export class AdoptionRepositoryDatabase implements AdoptionRepository {
   }
 
   async findByPetId(petId: string): Promise<Adoption[]> {
-    const adoptionRow = await this.db.query((prisma) =>
+    const adoptionRows = await this.db.query((prisma) =>
       prisma.adoption.findMany({
         where: { petId },
         select: {
@@ -111,14 +114,41 @@ export class AdoptionRepositoryDatabase implements AdoptionRepository {
         },
       })
     )
-    return adoptionRow.map((row) =>
+    return adoptionRows.map((adoption) =>
       Adoption.fromPersistence({
-        id: row.id,
-        petId: row.petId,
-        adopterId: row.adopterId,
-        status: row.status,
-        requestedAt: row.requestedAt,
-        completedAt: row.completedAt,
+        id: adoption.id,
+        petId: adoption.petId,
+        adopterId: adoption.adopterId,
+        status: adoption.status,
+        requestedAt: adoption.requestedAt,
+        completedAt: adoption.completedAt,
+      })
+    )
+  }
+
+  async findByAdopterId(adopterId: string): Promise<Adoption[]> {
+    const adoptionsRows = await this.db.query((prisma) =>
+      prisma.adoption.findMany({
+        where: { adopterId },
+        orderBy: { requestedAt: "desc" },
+        select: {
+          id: true,
+          petId: true,
+          adopterId: true,
+          status: true,
+          requestedAt: true,
+          completedAt: true,
+        },
+      })
+    )
+    return adoptionsRows.map((adoption) =>
+      Adoption.fromPersistence({
+        id: adoption.id,
+        petId: adoption.petId,
+        adopterId: adoption.adopterId,
+        status: adoption.status as AdoptionStatus,
+        requestedAt: adoption.requestedAt,
+        completedAt: adoption.completedAt,
       })
     )
   }
