@@ -232,4 +232,103 @@ describe("Adoption Repository", () => {
     )
     expect(output).toBeNull()
   })
+
+  test("should return null on findById() when adoption does not exist", async () => {
+    const output = await adoptionRepository.findById(
+      "00000000-0000-0000-0000-000000000000"
+    )
+    expect(output).toBeNull()
+  })
+
+  test("should return a domain Adoption entity with findById() when status is PENDING", async () => {
+    const bcrypt = new BcryptAdapter()
+    const ownerInput = Account.create(
+      "Owner Five",
+      `owner5-${Math.random()}@example.com`,
+      await bcrypt.hash("ValidPassword123"),
+      "(83) 91111-0000",
+      "Campina Grande",
+      "PB"
+    )
+    await accountRepository.add(ownerInput)
+    const adopterInput = Account.create(
+      "Adopter Five",
+      `adopter5-${Math.random()}@example.com`,
+      await bcrypt.hash("ValidPassword123"),
+      "(83) 92222-0000",
+      "Campina Grande",
+      "PB"
+    )
+    await accountRepository.add(adopterInput)
+    const petInput = Pet.create(
+      ownerInput.getAccountId(),
+      "Rex",
+      "Dog",
+      "MALE",
+      2,
+      "SMALL",
+      "Friendly",
+      null
+    )
+    await petRepository.add(petInput)
+    const adoptionInput = Adoption.request(
+      petInput.getId(),
+      adopterInput.getAccountId()
+    )
+    await adoptionRepository.add(adoptionInput)
+    const output = await adoptionRepository.findById(adoptionInput.getId())
+    expect(output).toBeTruthy()
+    expect(output?.getId()).toBe(adoptionInput.getId())
+    expect(output?.getPetId()).toBe(petInput.getId())
+    expect(output?.getAdopterId()).toBe(adopterInput.getAccountId())
+    expect(output?.getStatusName()).toBe("PENDING")
+    expect(output?.getCompletedAt()).toBeNull()
+  })
+
+  test("should return a domain Adoption entity with findById() when status is APPROVED", async () => {
+    const bcrypt = new BcryptAdapter()
+    const ownerInput = Account.create(
+      "Owner Six",
+      `owner6-${Math.random()}@example.com`,
+      await bcrypt.hash("ValidPassword123"),
+      "(83) 93333-0000",
+      "Campina Grande",
+      "PB"
+    )
+    await accountRepository.add(ownerInput)
+    const adopterInput = Account.create(
+      "Adopter Six",
+      `adopter6-${Math.random()}@example.com`,
+      await bcrypt.hash("ValidPassword123"),
+      "(83) 94444-0000",
+      "Campina Grande",
+      "PB"
+    )
+    await accountRepository.add(adopterInput)
+    const petInput = Pet.create(
+      ownerInput.getAccountId(),
+      "Mia",
+      "Cat",
+      "FEMALE",
+      3,
+      "SMALL",
+      "Calm",
+      null
+    )
+    await petRepository.add(petInput)
+    const row = await prisma.adoption.create({
+      data: {
+        petId: petInput.getId(),
+        adopterId: adopterInput.getAccountId(),
+        status: "APPROVED",
+      },
+      select: { id: true },
+    })
+    const output = await adoptionRepository.findById(row.id)
+    expect(output).toBeTruthy()
+    expect(output?.getId()).toBe(row.id)
+    expect(output?.getPetId()).toBe(petInput.getId())
+    expect(output?.getAdopterId()).toBe(adopterInput.getAccountId())
+    expect(output?.getStatusName()).toBe("APPROVED")
+  })
 })
