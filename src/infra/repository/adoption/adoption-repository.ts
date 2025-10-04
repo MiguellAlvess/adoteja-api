@@ -21,6 +21,18 @@ export class AdoptionRepositoryDatabase implements AdoptionRepository {
     )
   }
 
+  async update(adoption: Adoption): Promise<void> {
+    await this.db.query((prisma) =>
+      prisma.adoption.update({
+        where: { id: adoption.getId() },
+        data: {
+          status: adoption.getStatusName(),
+          completedAt: adoption.getCompletedAt(),
+        },
+      })
+    )
+  }
+
   async findById(adoptionId: string): Promise<Adoption | null> {
     const adoptionRow = await this.db.query((prisma) =>
       prisma.adoption.findUnique({
