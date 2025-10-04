@@ -10,5 +10,6 @@ export interface HttpServer {
     callback: Function,
     options?: RouteOptions
   ): void
+  use(path: string, ...handlers: Array<Function>): void
   listen(port: number): unknown
 }

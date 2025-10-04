@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import express, { Application, Request, Response } from "express"
 import multer from "multer"
-
 import { HttpServer, RouteOptions } from "./http-server.js"
 import { mapErrorToHttp } from "./error-maper.js"
 
@@ -11,6 +10,11 @@ export class ExpressAdapter implements HttpServer {
   constructor() {
     this.app = express()
     this.app.use(express.json())
+  }
+
+  use(path: string, ...handlers: Array<Function>): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.app.use(path, ...(handlers as any[]))
   }
 
   route(
@@ -38,29 +42,25 @@ export class ExpressAdapter implements HttpServer {
           }
         }
         const output = await callback(req.params, body, req.query, req.headers)
-        if (
-          output &&
-          typeof output === "object" &&
-          "statusCode" in output &&
-          "body" in output
-        ) {
-          const { statusCode, body } = output as {
-            statusCode: number
-            body: unknown
-          }
-          return res.status(statusCode).json(body)
+        if (output && typeof output === "object") {
+          const status =
+            (output.statusCode as number) ?? (output.status as number)
+          const bodyOut = "body" in output ? (output.body as unknown) : output
+          if (status) return res.status(status).json(bodyOut)
         }
+
         res.json(output)
       } catch (error: unknown) {
         const { statusCode, body } = mapErrorToHttp(error)
         res.status(statusCode).json(body)
       }
     }
-    if (hasUpload) {
-      this.app[method as keyof Application](url, uploadMw!, handler)
-    } else {
-      this.app[method as keyof Application](url, handler)
-    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const middlewares: any[] = []
+    if (hasUpload && uploadMw)
+      middlewares.push(uploadMw)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(this.app as any)[method](url, ...middlewares, handler)
   }
 
   listen(port: number) {
