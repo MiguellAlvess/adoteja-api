@@ -5,6 +5,7 @@ import { Signup } from "./application/usecase/account/signup.js"
 import { UpdateAccount } from "./application/usecase/account/update-account.js"
 import { ApproveAdoption } from "./application/usecase/adoption/approve-adoption.js"
 import { GetAdoption } from "./application/usecase/adoption/get-adoption.js"
+import { RejectAdoption } from "./application/usecase/adoption/reject-adoption.js"
 import { RequestAdoption } from "./application/usecase/adoption/request-adoption.js"
 import { CreatePet } from "./application/usecase/pet/create-pet.js"
 import { DeletePet } from "./application/usecase/pet/delete-pet.js"
@@ -77,12 +78,14 @@ export function buildApp() {
   const requestAdoption = new RequestAdoption(petRepository, adoptionRepository)
   const getAdoption = new GetAdoption(adoptionRepository)
   const approveAdoption = new ApproveAdoption(adoptionRepository)
+  const rejectAdoption = new RejectAdoption(adoptionRepository)
   new AdoptionController(
     httpServer,
     tokenVerifier,
     requestAdoption,
     getAdoption,
-    approveAdoption
+    approveAdoption,
+    rejectAdoption
   )
   return httpServer
 }
