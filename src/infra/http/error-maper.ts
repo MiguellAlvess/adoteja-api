@@ -13,6 +13,7 @@ import {
 } from "../../application/errors/pet/index.js"
 import {
   AdoptionAlreadyRequestedError,
+  AdoptionNotFoundError,
   PetNotAvailableForAdoptionError,
   PetNotFoundForAdoptionError,
 } from "../../application/errors/adoption/index.js"
@@ -49,6 +50,9 @@ export function mapErrorToHttp(error: unknown): HttpResponse<ErrorBody> {
   }
   if (error instanceof AdoptionAlreadyRequestedError) {
     return http.conflict({ message: error.message })
+  }
+  if (error instanceof AdoptionNotFoundError) {
+    return http.notFound({ message: error.message })
   }
   if (error instanceof DomainError) {
     return http.badRequest({ message: error.message, code: error.code })

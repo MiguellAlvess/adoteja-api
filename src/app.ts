@@ -3,6 +3,7 @@ import { GetAccount } from "./application/usecase/account/get-account.js"
 import { Login } from "./application/usecase/account/login.js"
 import { Signup } from "./application/usecase/account/signup.js"
 import { UpdateAccount } from "./application/usecase/account/update-account.js"
+import { GetAdoption } from "./application/usecase/adoption/get-adoption.js"
 import { RequestAdoption } from "./application/usecase/adoption/request-adoption.js"
 import { CreatePet } from "./application/usecase/pet/create-pet.js"
 import { DeletePet } from "./application/usecase/pet/delete-pet.js"
@@ -73,6 +74,12 @@ export function buildApp() {
   )
   const adoptionRepository = new AdoptionRepositoryDatabase(databaseConnection)
   const requestAdoption = new RequestAdoption(petRepository, adoptionRepository)
-  new AdoptionController(httpServer, tokenVerifier, requestAdoption)
+  const getAdoption = new GetAdoption(adoptionRepository)
+  new AdoptionController(
+    httpServer,
+    tokenVerifier,
+    requestAdoption,
+    getAdoption
+  )
   return httpServer
 }

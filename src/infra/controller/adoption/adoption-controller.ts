@@ -7,13 +7,18 @@ import {
 } from "../../http/require-auth.js"
 import { AccessTokenVerifier } from "../../../application/ports/auth/access-token-verifier.js"
 import { RequestAdoption } from "../../../application/usecase/adoption/request-adoption.js"
-import { requestAdoptionSchema } from "../../http/schemas/adoption-schema.js"
+import {
+  adoptionIdSchema,
+  requestAdoptionSchema,
+} from "../../http/schemas/adoption-schema.js"
+import { GetAdoption } from "../../../application/usecase/adoption/get-adoption.js"
 
 export class AdoptionController {
   constructor(
     httpServer: HttpServer,
     tokenVerifier: AccessTokenVerifier,
-    requestAdoption: RequestAdoption
+    requestAdoption: RequestAdoption,
+    getAdoption: GetAdoption
   ) {
     const requireAuth = makeRequireAuth(tokenVerifier)
 
@@ -28,6 +33,18 @@ export class AdoptionController {
             adopterId: auth.sub,
           })
           return http.created(output)
+        }
+      )
+    )
+
+    httpServer.route(
+      "get",
+      "/api/adoptions/:id",
+      requireAuth<RouteParams, unknown, RouteQuery>(
+        async (params, _b, _q, _h, _auth) => {
+          const { id } = adoptionIdSchema.parse(params)
+          const output = await getAdoption.execute(id)
+          return http.ok(output)
         }
       )
     )
