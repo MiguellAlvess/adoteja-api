@@ -14,6 +14,7 @@ import {
 import { GetAdoption } from "../../../application/usecase/adoption/get-adoption.js"
 import { ApproveAdoption } from "../../../application/usecase/adoption/approve-adoption.js"
 import { RejectAdoption } from "../../../application/usecase/adoption/reject-adoption.js"
+import { CompleteAdoption } from "../../../application/usecase/adoption/complete-adoption.js"
 
 export class AdoptionController {
   constructor(
@@ -22,7 +23,8 @@ export class AdoptionController {
     requestAdoption: RequestAdoption,
     getAdoption: GetAdoption,
     approveAdoption: ApproveAdoption,
-    rejectAdoption: RejectAdoption
+    rejectAdoption: RejectAdoption,
+    completeAdoption: CompleteAdoption
   ) {
     const requireAuth = makeRequireAuth(tokenVerifier)
 
@@ -58,6 +60,17 @@ export class AdoptionController {
       requireAuth<RouteParams, unknown, RouteQuery>(
         async (params, _b, _q, _h, _auth) => {
           const output = await rejectAdoption.execute(params.id)
+          return http.ok(output)
+        }
+      )
+    )
+
+    httpServer.route(
+      "patch",
+      "/api/adoptions/:id/complete",
+      requireAuth<RouteParams, unknown, RouteQuery>(
+        async (params, _b, _q, _h, _auth) => {
+          const output = await completeAdoption.execute(params.id)
           return http.ok(output)
         }
       )
