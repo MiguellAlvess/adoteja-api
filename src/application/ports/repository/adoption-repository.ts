@@ -6,4 +6,5 @@ export interface AdoptionRepository {
     adopterId: string,
     petId: string
   ): Promise<Adoption | null>
+  findById(adoptionId: string): Promise<Adoption | null>
 }

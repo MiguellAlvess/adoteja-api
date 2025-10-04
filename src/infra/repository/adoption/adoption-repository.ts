@@ -21,6 +21,35 @@ export class AdoptionRepositoryDatabase implements AdoptionRepository {
     )
   }
 
+  async findById(adoptionId: string): Promise<Adoption | null> {
+    const adoptionRow = await this.db.query((prisma) =>
+      prisma.adoption.findUnique({
+        where: { id: adoptionId },
+        select: {
+          id: true,
+          petId: true,
+          adopterId: true,
+          status: true,
+          requestedAt: true,
+          completedAt: true,
+        },
+      })
+    )
+    if (!adoptionRow) return null
+    return Adoption.fromPersistence({
+      id: adoptionRow.id,
+      petId: adoptionRow.petId,
+      adopterId: adoptionRow.adopterId,
+      status: adoptionRow.status as
+        | "PENDING"
+        | "APPROVED"
+        | "REJECTED"
+        | "COMPLETED",
+      requestedAt: adoptionRow.requestedAt,
+      completedAt: adoptionRow.completedAt,
+    })
+  }
+
   async findActiveByAdopterAndPet(
     adopterId: string,
     petId: string
