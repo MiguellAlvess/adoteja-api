@@ -237,4 +237,61 @@ describe("Adoption API", () => {
     )
     expect(output.status).toBe(400)
   })
+
+  test("should return 200 when adoption is found", async () => {
+    const ownerInput = {
+      name: "Owner",
+      email: `owner-${Math.random()}@example.com`,
+      password: "ValidPassword123",
+      phone: "(83) 99999-0000",
+      city: "Campina Grande",
+      state: "PB",
+    }
+    const ownerOutput = await axios.post(`${baseURL}/api/accounts`, ownerInput)
+    expect(ownerOutput.status).toBe(201)
+    const ownerToken = ownerOutput.data.accessToken as string
+    const adopterInput = {
+      name: "Adopter",
+      email: `adopter-${Math.random()}@example.com`,
+      password: "ValidPassword123",
+      phone: "(83) 98888-0000",
+      city: "Campina Grande",
+      state: "PB",
+    }
+    const adopterOutput = await axios.post(
+      `${baseURL}/api/accounts`,
+      adopterInput
+    )
+    expect(adopterOutput.status).toBe(201)
+    const adopterToken = adopterOutput.data.accessToken as string
+    const petInput = {
+      name: "Spike",
+      species: "Dog",
+      gender: "MALE",
+      age: 3,
+      size: "SMALL",
+      description: "Adorable",
+    }
+    const petOutput = await axios.post(`${baseURL}/api/pets`, petInput, {
+      headers: { Authorization: `Bearer ${ownerToken}` },
+    })
+    expect(petOutput.status).toBe(201)
+    const petId = petOutput.data.petId as string
+    const adoptionCreateOutput = await axios.post(
+      `${baseURL}/api/adoptions`,
+      { petId },
+      { headers: { Authorization: `Bearer ${adopterToken}` } }
+    )
+    expect(adoptionCreateOutput.status).toBe(201)
+    const adoptionId = adoptionCreateOutput.data.adoptionId as string
+    const getOutput = await axios.get(
+      `${baseURL}/api/adoptions/${adoptionId}`,
+      {
+        headers: { Authorization: `Bearer ${adopterToken}` },
+      }
+    )
+    expect(getOutput.status).toBe(200)
+    expect(getOutput.data.id).toBe(adoptionId)
+    expect(getOutput.data.petId).toBe(petId)
+  })
 })
