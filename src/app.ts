@@ -28,6 +28,9 @@ import { AccountRepositoryDatabase } from "./infra/repository/account/account-re
 import { AdoptionRepositoryDatabase } from "./infra/repository/adoption/adoption-repository.js"
 import { PetRepositoryDatabase } from "./infra/repository/pet/pet-repository.js"
 import { MulterPhotoStorageAdapter } from "./infra/storage/multer-photo-storage-adapter.js"
+import swaggerUi from "swagger-ui-express"
+import { readFileSync } from "node:fs"
+import path from "node:path"
 
 export function buildApp() {
   const databaseConnection = new PrismaAdapter()
@@ -96,5 +99,14 @@ export function buildApp() {
     getAdoptionsByPet,
     getAdoptionsByAdopter
   )
+  const swaggerPath = path.resolve(process.cwd(), "docs/swagger.json")
+  const swaggerDoc = JSON.parse(readFileSync(swaggerPath, "utf-8"))
+  httpServer.use("/docs", ...swaggerUi.serve)
+  httpServer.use("/docs", swaggerUi.setup(swaggerDoc, { explorer: true }))
+  httpServer.route("get", "/swagger.json", async () => ({
+    status: 200,
+    headers: { "content-type": "application/json" },
+    body: swaggerDoc,
+  }))
   return httpServer
 }
