@@ -462,4 +462,52 @@ describe("Adoption Repository", () => {
     })
     expect(adoptionRow?.status).toBe("COMPLETED")
   })
+
+  test("should return all adoptions of a pet", async () => {
+    const bcrypt = new BcryptAdapter()
+    const owner = Account.create(
+      "Owner",
+      `owner-repo-${Math.random()}@example.com`,
+      await bcrypt.hash("ValidPassword123"),
+      "(83) 99999-0000",
+      "Campina Grande",
+      "PB"
+    )
+    await accountRepository.add(owner)
+    const adopter1 = Account.create(
+      "AdopterOne",
+      `adopter-r1-${Math.random()}@example.com`,
+      await bcrypt.hash("ValidPassword123"),
+      "(83) 98888-0000",
+      "Campina Grande",
+      "PB"
+    )
+    const adopter2 = Account.create(
+      "AdopterTwo",
+      `adopter-r2-${Math.random()}@example.com`,
+      await bcrypt.hash("ValidPassword123"),
+      "(83) 97777-0000",
+      "Campina Grande",
+      "PB"
+    )
+    await accountRepository.add(adopter1)
+    await accountRepository.add(adopter2)
+    const pet = Pet.create(
+      owner.getAccountId(),
+      "Rex",
+      "Dog",
+      "MALE",
+      5,
+      "MEDIUM",
+      "Friendly",
+      null
+    )
+    await petRepository.add(pet)
+    const adoption1 = Adoption.request(pet.getId(), adopter1.getAccountId())
+    const adoption2 = Adoption.request(pet.getId(), adopter2.getAccountId())
+    await adoptionRepository.add(adoption1)
+    await adoptionRepository.add(adoption2)
+    const output = await adoptionRepository.findByPetId(pet.getId())
+    expect(output.length).toBe(2)
+  })
 })
