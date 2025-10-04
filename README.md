@@ -86,6 +86,11 @@ O projeto conta com mais de 200 testes automatizados, abrangendo testes unitári
 
 Os testes foram implementados com Vitest, e o Testcontainers foi utilizado para garantir a execução isolada e realista dos testes.
 
+<img width="1220" height="560" alt="image" src="https://github.com/user-attachments/assets/ff70ee91-d39a-4f7c-bd7e-8334196a6128" />
+
 ## Documentação com Swagger
 
 A documentação completa da API pode ser acessada em http://localhost:8080/docs
+
+<img width="932" height="905" alt="publicacao-adote-ja" src="https://github.com/user-attachments/assets/29be6d76-5370-4d03-b106-f42ef93c6ba8" />
+
