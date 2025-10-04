@@ -415,4 +415,51 @@ describe("Adoption Repository", () => {
     })
     expect(adoptionRow?.status).toBe("REJECTED")
   })
+
+  test("should update status to COMPLETED in database", async () => {
+    const bcrypt = new BcryptAdapter()
+    const owner = Account.create(
+      "Owner Repo C",
+      `owner-rc-${Math.random()}@example.com`,
+      await bcrypt.hash("ValidPassword123"),
+      "(83) 90007-0000",
+      "Campina Grande",
+      "PB"
+    )
+    await accountRepository.add(owner)
+    const adopter = Account.create(
+      "Adopter Repo C",
+      `adopter-rc-${Math.random()}@example.com`,
+      await bcrypt.hash("ValidPassword123"),
+      "(83) 90008-0000",
+      "Campina Grande",
+      "PB"
+    )
+    await accountRepository.add(adopter)
+    const pet = Pet.create(
+      owner.getAccountId(),
+      "Thor",
+      "Dog",
+      "MALE",
+      5,
+      "LARGE",
+      "Loyal",
+      null
+    )
+    await petRepository.add(pet)
+    const adoption = Adoption.request(pet.getId(), adopter.getAccountId())
+    await adoptionRepository.add(adoption)
+    await prisma.adoption.update({
+      where: { id: adoption.getId() },
+      data: { status: "APPROVED" },
+    })
+    const approved = await adoptionRepository.findById(adoption.getId())
+    approved!.complete()
+    await adoptionRepository.update(approved!)
+    const adoptionRow = await prisma.adoption.findUnique({
+      where: { id: adoption.getId() },
+      select: { status: true, completedAt: true },
+    })
+    expect(adoptionRow?.status).toBe("COMPLETED")
+  })
 })
