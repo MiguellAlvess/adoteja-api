@@ -480,4 +480,73 @@ describe("Adoption API", () => {
     expect(completeOutput.data.status).toBe("COMPLETED")
     expect(completeOutput.data.completedAt).toBeDefined()
   })
+
+  test("should return 200 with all adoptions of a pet", async () => {
+    const ownerInput = {
+      name: "Owner",
+      email: `owner-${Math.random()}@example.com`,
+      password: "ValidPassword123",
+      phone: "(83) 99999-0000",
+      city: "Campina Grande",
+      state: "PB",
+    }
+    const ownerOutput = await axios.post(`${baseURL}/api/accounts`, ownerInput)
+    expect(ownerOutput.status).toBe(201)
+    const ownerToken = ownerOutput.data.accessToken as string
+    const adopter1Output = await axios.post(`${baseURL}/api/accounts`, {
+      name: "AdopterOne",
+      email: `ad1-${Math.random()}@example.com`,
+      password: "ValidPassword123",
+      phone: "(83) 98888-0000",
+      city: "Campina Grande",
+      state: "PB",
+    })
+    const adopter2Output = await axios.post(`${baseURL}/api/accounts`, {
+      name: "AdopterTwo",
+      email: `ad2-${Math.random()}@example.com`,
+      password: "ValidPassword123",
+      phone: "(83) 97777-0000",
+      city: "Campina Grande",
+      state: "PB",
+    })
+    expect(adopter1Output.status).toBe(201)
+    expect(adopter2Output.status).toBe(201)
+    const adopter1Token = adopter1Output.data.accessToken as string
+    const adopter2Token = adopter2Output.data.accessToken as string
+    const petOutput = await axios.post(
+      `${baseURL}/api/pets`,
+      {
+        name: "Spike",
+        species: "Dog",
+        gender: "MALE",
+        age: 3,
+        size: "SMALL",
+        description: "Adorable",
+      },
+      { headers: { Authorization: `Bearer ${ownerToken}` } }
+    )
+    expect(petOutput.status).toBe(201)
+    const petId = petOutput.data.petId as string
+
+    const adoption1 = await axios.post(
+      `${baseURL}/api/adoptions`,
+      { petId },
+      { headers: { Authorization: `Bearer ${adopter1Token}` } }
+    )
+    const adoption2 = await axios.post(
+      `${baseURL}/api/adoptions`,
+      { petId },
+      { headers: { Authorization: `Bearer ${adopter2Token}` } }
+    )
+    expect(adoption1.status).toBe(201)
+    expect(adoption2.status).toBe(201)
+    const listOutput = await axios.get(
+      `${baseURL}/api/pets/${petId}/adoptions`,
+      {
+        headers: { Authorization: `Bearer ${ownerToken}` },
+      }
+    )
+    expect(listOutput.status).toBe(200)
+    expect(listOutput.data.length).toBe(2)
+  })
 })
