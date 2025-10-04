@@ -1,6 +1,6 @@
 import { AdoptionRepository } from "../../ports/repository/adoption-repository.js"
 
-export class GetAdoptionsByUser {
+export class GetAdoptionsByAdopter {
   constructor(private readonly adoptionRepository: AdoptionRepository) {}
 
   async execute(adopterId: string): Promise<Output> {
