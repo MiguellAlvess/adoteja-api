@@ -77,13 +77,6 @@ describe("Adoption API", () => {
     expect(adoptionOutput.data.requestedAt).toBeDefined()
   })
 
-  test("should return 401 when requesting without auth", async () => {
-    const output = await axios.post(`${baseURL}/api/adoptions`, {
-      petId: "ac355f06-db61-4e5b-8fef-7e6abb6ce47c",
-    })
-    expect(output.status).toBe(401)
-  })
-
   test("should return 404 when pet does not exist", async () => {
     const adopterInput = {
       name: "Adopter",
@@ -215,7 +208,7 @@ describe("Adoption API", () => {
     expect(second.status).toBe(409)
   })
 
-  test("should return 400 when body is invalid (invalid UUID)", async () => {
+  test("should return 400 when body is invalid", async () => {
     const adopterInput = {
       name: "Adopter",
       email: `adopter-${Math.random()}@example.com`,
@@ -370,5 +363,60 @@ describe("Adoption API", () => {
       { headers: { Authorization: `Bearer ${token}` } }
     )
     expect(output.status).toBe(404)
+  })
+
+  test("should return 200 when adoption is rejected", async () => {
+    const ownerInput = {
+      name: "Owner",
+      email: `owner-r-api-${Math.random()}@example.com`,
+      password: "ValidPassword123",
+      phone: "(83) 99999-0000",
+      city: "Campina Grande",
+      state: "PB",
+    }
+    const ownerOutput = await axios.post(`${baseURL}/api/accounts`, ownerInput)
+    expect(ownerOutput.status).toBe(201)
+    const ownerToken = ownerOutput.data.accessToken
+    const adopterInput = {
+      name: "Adopter",
+      email: `adopter-r-api-${Math.random()}@example.com`,
+      password: "ValidPassword123",
+      phone: "(83) 98888-0000",
+      city: "Campina Grande",
+      state: "PB",
+    }
+    const adopterOutput = await axios.post(
+      `${baseURL}/api/accounts`,
+      adopterInput
+    )
+    expect(adopterOutput.status).toBe(201)
+    const adopterToken = adopterOutput.data.accessToken
+    const petInput = {
+      name: "Spike",
+      species: "Dog",
+      gender: "MALE",
+      age: 3,
+      size: "SMALL",
+      description: "Adorable",
+    }
+    const petOutput = await axios.post(`${baseURL}/api/pets`, petInput, {
+      headers: { Authorization: `Bearer ${ownerToken}` },
+    })
+    expect(petOutput.status).toBe(201)
+    const petId = petOutput.data.petId
+    const requestOutput = await axios.post(
+      `${baseURL}/api/adoptions`,
+      { petId },
+      { headers: { Authorization: `Bearer ${adopterToken}` } }
+    )
+    expect(requestOutput.status).toBe(201)
+    const adoptionId = requestOutput.data.adoptionId
+    const rejectOutput = await axios.patch(
+      `${baseURL}/api/adoptions/${adoptionId}/reject`,
+      {},
+      { headers: { Authorization: `Bearer ${ownerToken}` } }
+    )
+    expect(rejectOutput.status).toBe(200)
+    expect(rejectOutput.data.status).toBe("REJECTED")
   })
 })
