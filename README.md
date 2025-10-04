@@ -25,10 +25,16 @@ REDIS_URL=redis:/default:passwordredis@localhost:6379/0
 REDIS_TTL_SECONDS=60
 ```
 
+**Instale as dependências**
+
+```
+pnpm install
+```
+
 **Atualize o schema do Prisma:**
 
 ```bash
-npx prisma db push
+pnpx prisma db push
 ```
 
 **Inicie os containers e o servidor:**
@@ -36,7 +42,7 @@ npx prisma db push
 ```bash
 docker-compose up -d
 
-npm run dev
+pnpm run dev
 ```
 
 ## Estrutura em camadas
@@ -62,6 +68,7 @@ npm run dev
 - **Docker**
 - **Redis**
 - **Vitest**
+- **Testcontainers**
 - **Zod**
 - **Multer**
 - **JSON Web Token (JWT)**
@@ -73,15 +80,11 @@ Para otimizar a performance e reduzir a carga sobre o banco de dados, a aplicaç
 
 ## Testes Automatizados
 
-A qualidade do software é garantida por uma suíte de testes robusta.
+A qualidade do software é garantida por uma suíte de testes robusta, desenvolvida com foco em confiabilidade e isolamento.
 
-Conta com **mais de 200 testes automatizados** que cobrem todas as camadas da aplicação, alcançando uma **cobertura de código superior a 95%**.
+O projeto conta com mais de 200 testes automatizados, abrangendo testes unitários e de integração, que cobrem todas as camadas da aplicação e alcançam uma cobertura de código superior a 95%.
 
-**Rodar todos os testes**
-
-```bash
-npm run test
-```
+Os testes foram implementados com Vitest, e o Testcontainers foi utilizado para garantir a execução isolada e realista dos testes.
 
 ## Documentação com Swagger
 
