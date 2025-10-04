@@ -235,7 +235,7 @@ describe("Adoption Repository", () => {
 
   test("should return null on findById() when adoption does not exist", async () => {
     const output = await adoptionRepository.findById(
-      "00000000-0000-0000-0000-000000000000"
+      "d7577128-eb5d-4763-bb1a-c444aca3f155"
     )
     expect(output).toBeNull()
   })
@@ -330,5 +330,47 @@ describe("Adoption Repository", () => {
     expect(output?.getPetId()).toBe(petInput.getId())
     expect(output?.getAdopterId()).toBe(adopterInput.getAccountId())
     expect(output?.getStatusName()).toBe("APPROVED")
+  })
+
+  test("should update adoption status to APPROVED in database", async () => {
+    const bcrypt = new BcryptAdapter()
+    const owner = Account.create(
+      "Owner Repo",
+      `owner-appr-${Math.random()}@example.com`,
+      await bcrypt.hash("ValidPassword123"),
+      "(83) 91111-0000",
+      "Campina Grande",
+      "PB"
+    )
+    await accountRepository.add(owner)
+    const adopter = Account.create(
+      "Adopter Repo",
+      `adopter-appr-${Math.random()}@example.com`,
+      await bcrypt.hash("ValidPassword123"),
+      "(83) 92222-0000",
+      "Campina Grande",
+      "PB"
+    )
+    await accountRepository.add(adopter)
+    const pet = Pet.create(
+      owner.getAccountId(),
+      "ApproveDog",
+      "Dog",
+      "MALE",
+      3,
+      "SMALL",
+      "Cute",
+      null
+    )
+    await petRepository.add(pet)
+    const adoption = Adoption.request(pet.getId(), adopter.getAccountId())
+    await adoptionRepository.add(adoption)
+    adoption.approve()
+    await adoptionRepository.update(adoption)
+    const adoptionRow = await prisma.adoption.findUnique({
+      where: { id: adoption.getId() },
+      select: { status: true },
+    })
+    expect(adoptionRow?.status).toBe("APPROVED")
   })
 })
