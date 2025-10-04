@@ -549,4 +549,75 @@ describe("Adoption API", () => {
     expect(listOutput.status).toBe(200)
     expect(listOutput.data.length).toBe(2)
   })
+
+  test("should return 200 with all adoptions of an adopter", async () => {
+    const ownerRes = await axios.post(`${baseURL}/api/accounts`, {
+      name: "Owner",
+      email: `owner-${Math.random()}@example.com`,
+      password: "ValidPassword123",
+      phone: "(83) 99999-0000",
+      city: "Campina Grande",
+      state: "PB",
+    })
+    expect(ownerRes.status).toBe(201)
+    const ownerToken = ownerRes.data.accessToken
+    const adopterRes = await axios.post(`${baseURL}/api/accounts`, {
+      name: "Adopter",
+      email: `adopter-${Math.random()}@example.com`,
+      password: "ValidPassword123",
+      phone: "(83) 98888-0000",
+      city: "Campina Grande",
+      state: "PB",
+    })
+    expect(adopterRes.status).toBe(201)
+    const adopterToken = adopterRes.data.accessToken
+    const pet1 = await axios.post(
+      `${baseURL}/api/pets`,
+      {
+        name: "Bolt",
+        species: "Dog",
+        gender: "MALE",
+        age: 4,
+        size: "MEDIUM",
+        description: "Fast",
+      },
+      { headers: { Authorization: `Bearer ${ownerToken}` } }
+    )
+    expect(pet1.status).toBe(201)
+    const pet2 = await axios.post(
+      `${baseURL}/api/pets`,
+      {
+        name: "Luna",
+        species: "Cat",
+        gender: "FEMALE",
+        age: 2,
+        size: "SMALL",
+        description: "Playful",
+      },
+      { headers: { Authorization: `Bearer ${ownerToken}` } }
+    )
+    expect(pet2.status).toBe(201)
+    const adoption1 = await axios.post(
+      `${baseURL}/api/adoptions`,
+      { petId: pet1.data.petId },
+      {
+        headers: { Authorization: `Bearer ${adopterToken}` },
+      }
+    )
+    expect(adoption1.status).toBe(201)
+    const adoption2 = await axios.post(
+      `${baseURL}/api/adoptions`,
+      { petId: pet2.data.petId },
+      {
+        headers: { Authorization: `Bearer ${adopterToken}` },
+      }
+    )
+    expect(adoption2.status).toBe(201)
+    const listOutput = await axios.get(`${baseURL}/api/adoptions/me`, {
+      headers: { Authorization: `Bearer ${adopterToken}` },
+    })
+    expect(listOutput.status).toBe(200)
+    expect(Array.isArray(listOutput.data)).toBe(true)
+    expect(listOutput.data.length).toBe(2)
+  })
 })
