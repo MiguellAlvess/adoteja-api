@@ -294,4 +294,81 @@ describe("Adoption API", () => {
     expect(getOutput.data.id).toBe(adoptionId)
     expect(getOutput.data.petId).toBe(petId)
   })
+
+  test("should return 200 when adoption is approved", async () => {
+    const ownerInput = {
+      name: "Owner",
+      email: `owner-${Math.random()}@example.com`,
+      password: "ValidPassword123",
+      phone: "(83) 99999-0000",
+      city: "Campina Grande",
+      state: "PB",
+    }
+    const ownerOutput = await axios.post(`${baseURL}/api/accounts`, ownerInput)
+    expect(ownerOutput.status).toBe(201)
+    const ownerToken = ownerOutput.data.accessToken as string
+    const adopterInput = {
+      name: "Adopter",
+      email: `adopter-${Math.random()}@example.com`,
+      password: "ValidPassword123",
+      phone: "(83) 98888-0000",
+      city: "Campina Grande",
+      state: "PB",
+    }
+    const adopterOutput = await axios.post(
+      `${baseURL}/api/accounts`,
+      adopterInput
+    )
+    expect(adopterOutput.status).toBe(201)
+    const adopterToken = adopterOutput.data.accessToken as string
+    const petInput = {
+      name: "Spike",
+      species: "Dog",
+      gender: "MALE",
+      age: 3,
+      size: "SMALL",
+      description: "Adorable",
+    }
+    const petOutput = await axios.post(`${baseURL}/api/pets`, petInput, {
+      headers: { Authorization: `Bearer ${ownerToken}` },
+    })
+    expect(petOutput.status).toBe(201)
+    const petId = petOutput.data.petId as string
+    const adoptionOutput = await axios.post(
+      `${baseURL}/api/adoptions`,
+      { petId },
+      { headers: { Authorization: `Bearer ${adopterToken}` } }
+    )
+    expect(adoptionOutput.status).toBe(201)
+    const adoptionId = adoptionOutput.data.adoptionId as string
+    const approveOutput = await axios.patch(
+      `${baseURL}/api/adoptions/${adoptionId}/approve`,
+      {},
+      { headers: { Authorization: `Bearer ${ownerToken}` } }
+    )
+    expect(approveOutput.status).toBe(200)
+    expect(approveOutput.data.id).toBe(adoptionId)
+    expect(approveOutput.data.status).toBe("APPROVED")
+  })
+
+  test("should return 404 when adoption does not exist", async () => {
+    const userInput = {
+      name: "User",
+      email: `user-${Math.random()}@example.com`,
+      password: "ValidPassword123",
+      phone: "(83) 90000-0000",
+      city: "Campina Grande",
+      state: "PB",
+    }
+    const userOutput = await axios.post(`${baseURL}/api/accounts`, userInput)
+    expect(userOutput.status).toBe(201)
+    const token = userOutput.data.accessToken as string
+    const invalid = "ac355f06-db61-4e5b-8fef-7e6abb6ce47c"
+    const output = await axios.patch(
+      `${baseURL}/api/adoptions/${invalid}/approve`,
+      {},
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
+    expect(output.status).toBe(404)
+  })
 })
