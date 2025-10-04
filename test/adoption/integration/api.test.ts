@@ -419,4 +419,65 @@ describe("Adoption API", () => {
     expect(rejectOutput.status).toBe(200)
     expect(rejectOutput.data.status).toBe("REJECTED")
   })
+
+  test("should return 200 when adoption is completed", async () => {
+    const ownerInput = {
+      name: "Owner",
+      email: `owner-comp-api-${Math.random()}@example.com`,
+      password: "ValidPassword123",
+      phone: "(83) 99999-0000",
+      city: "Campina Grande",
+      state: "PB",
+    }
+    const ownerOutput = await axios.post(`${baseURL}/api/accounts`, ownerInput)
+    const ownerToken = ownerOutput.data.accessToken
+    const adopterInput = {
+      name: "Adopter",
+      email: `adopter-comp-api-${Math.random()}@example.com`,
+      password: "ValidPassword123",
+      phone: "(83) 98888-0000",
+      city: "Campina Grande",
+      state: "PB",
+    }
+    const adopterOutput = await axios.post(
+      `${baseURL}/api/accounts`,
+      adopterInput
+    )
+    const adopterToken = adopterOutput.data.accessToken
+    const petInput = {
+      name: "Spike",
+      species: "Dog",
+      gender: "MALE",
+      age: 3,
+      size: "SMALL",
+      description: "Adorable",
+    }
+    const petOutput = await axios.post(`${baseURL}/api/pets`, petInput, {
+      headers: { Authorization: `Bearer ${ownerToken}` },
+    })
+    const petId = petOutput.data.petId
+    const requestOutput = await axios.post(
+      `${baseURL}/api/adoptions`,
+      { petId },
+      { headers: { Authorization: `Bearer ${adopterToken}` } }
+    )
+    const adoptionId = requestOutput.data.adoptionId
+
+    const approveOutput = await axios.patch(
+      `${baseURL}/api/adoptions/${adoptionId}/approve`,
+      {},
+      { headers: { Authorization: `Bearer ${ownerToken}` } }
+    )
+    expect(approveOutput.status).toBe(200)
+    expect(approveOutput.data.status).toBe("APPROVED")
+
+    const completeOutput = await axios.patch(
+      `${baseURL}/api/adoptions/${adoptionId}/complete`,
+      {},
+      { headers: { Authorization: `Bearer ${ownerToken}` } }
+    )
+    expect(completeOutput.status).toBe(200)
+    expect(completeOutput.data.status).toBe("COMPLETED")
+    expect(completeOutput.data.completedAt).toBeDefined()
+  })
 })
