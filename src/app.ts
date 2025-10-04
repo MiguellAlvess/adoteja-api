@@ -3,6 +3,7 @@ import { GetAccount } from "./application/usecase/account/get-account.js"
 import { Login } from "./application/usecase/account/login.js"
 import { Signup } from "./application/usecase/account/signup.js"
 import { UpdateAccount } from "./application/usecase/account/update-account.js"
+import { RequestAdoption } from "./application/usecase/adoption/request-adoption.js"
 import { CreatePet } from "./application/usecase/pet/create-pet.js"
 import { DeletePet } from "./application/usecase/pet/delete-pet.js"
 import { GetAllPets } from "./application/usecase/pet/get-all.js"
@@ -12,11 +13,13 @@ import { JwtAccessTokenVerifierAdapter } from "./infra/auth/jwt-access-token-ver
 import { JwtTokenGeneratorAdapter } from "./infra/auth/jwt-token-generator-adapter.js"
 import { RedisCacheAdapter } from "./infra/cache/redis-adapter.js"
 import { AccountController } from "./infra/controller/account/account-controller.js"
+import { AdoptionController } from "./infra/controller/adoption/adoption-controller.js"
 import { PetController } from "./infra/controller/pet/pet-controller.js"
 import { BcryptAdapter } from "./infra/crypto/bcrypt-adapter.js"
 import { PrismaAdapter } from "./infra/database/prisma-adapter.js"
 import { ExpressAdapter } from "./infra/http/express-adapter.js"
 import { AccountRepositoryDatabase } from "./infra/repository/account/account-repository.js"
+import { AdoptionRepositoryDatabase } from "./infra/repository/adoption/adoption-repository.js"
 import { PetRepositoryDatabase } from "./infra/repository/pet/pet-repository.js"
 import { MulterPhotoStorageAdapter } from "./infra/storage/multer-photo-storage-adapter.js"
 
@@ -68,5 +71,8 @@ export function buildApp() {
     deletePet,
     updatePet
   )
+  const adoptionRepository = new AdoptionRepositoryDatabase(databaseConnection)
+  const requestAdoption = new RequestAdoption(petRepository, adoptionRepository)
+  new AdoptionController(httpServer, tokenVerifier, requestAdoption)
   return httpServer
 }

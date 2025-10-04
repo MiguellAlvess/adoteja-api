@@ -1,18 +1,21 @@
 import { http, HttpResponse } from "./http.js"
-
+import { ZodError } from "zod"
 import { DomainError } from "../../domain/errors/domain-error.js"
 
 import {
   AccountNotFoundError,
   EmailAlreadyExistsError,
 } from "../../application/errors/account/index.js"
-import { ZodError } from "zod"
 import { UnauthorizedError } from "../../application/errors/auth/index.js"
-import { InvalidCityError } from "../../domain/errors/account/account-errors.js"
 import {
   NotPetOwnerError,
   PetNotFoundError,
 } from "../../application/errors/pet/index.js"
+import {
+  AdoptionAlreadyRequestedError,
+  PetNotAvailableForAdoptionError,
+  PetNotFoundForAdoptionError,
+} from "../../application/errors/adoption/index.js"
 
 type ErrorBody = { message: string; code?: string; details?: unknown }
 
@@ -23,9 +26,6 @@ export function mapErrorToHttp(error: unknown): HttpResponse<ErrorBody> {
       details: error.flatten().fieldErrors,
     })
   }
-  if (error instanceof DomainError) {
-    return http.badRequest({ message: error.message, code: error.code })
-  }
   if (error instanceof AccountNotFoundError) {
     return http.notFound({ message: error.message })
   }
@@ -35,14 +35,24 @@ export function mapErrorToHttp(error: unknown): HttpResponse<ErrorBody> {
   if (error instanceof UnauthorizedError) {
     return http.unauthorized({ message: error.message })
   }
-  if (error instanceof InvalidCityError) {
-    return http.unauthorized({ message: error.message })
-  }
   if (error instanceof PetNotFoundError) {
     return http.notFound({ message: error.message })
   }
   if (error instanceof NotPetOwnerError) {
     return http.forbidden({ message: error.message })
   }
+  if (error instanceof PetNotFoundForAdoptionError) {
+    return http.notFound({ message: error.message })
+  }
+  if (error instanceof PetNotAvailableForAdoptionError) {
+    return http.conflict({ message: error.message })
+  }
+  if (error instanceof AdoptionAlreadyRequestedError) {
+    return http.conflict({ message: error.message })
+  }
+  if (error instanceof DomainError) {
+    return http.badRequest({ message: error.message, code: error.code })
+  }
+
   return http.serverError()
 }
